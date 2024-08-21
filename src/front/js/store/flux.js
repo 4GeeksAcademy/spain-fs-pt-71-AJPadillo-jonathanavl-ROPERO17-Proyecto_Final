@@ -34,6 +34,15 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
+			// Acción para cerrar sesión
+			logout: () => {
+				localStorage.removeItem("accessToken"); // Elimina el token del localStorage
+				setStore({
+					currentUser: null, // Establece el usuario actual como nulo en el store
+					isLoggedIn: false, // Marcar como no logueado
+				});
+			},
+
 			/////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try{
