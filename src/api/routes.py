@@ -35,6 +35,18 @@ def login():
     # Devuelve el token de acceso como respuesta JSON
     return jsonify(access_token=access_token)
 
+@api.route('/signup', methods=['POST'])
+def create_user():
+    # Obtiene los datos del cuerpo de la solicitud JSON
+    data = request.json
+    # Crea un nuevo usuario con el email y password proporcionados
+    new_user = User(email=data['email'], password=data['password'])
+    # Añade el nuevo usuario a la sesión de la base de datos
+    db.session.add(new_user)
+    # Confirma los cambios en la base de datos (guarda el nuevo usuario)
+    db.session.commit()
+    # Devuelve los datos del nuevo usuario como respuesta JSON
+    return jsonify({"user": new_user.serialize()}), 200
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
