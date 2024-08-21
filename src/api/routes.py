@@ -6,7 +6,7 @@ from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 api = Blueprint('api', __name__)
 
@@ -47,6 +47,24 @@ def create_user():
     db.session.commit()
     # Devuelve los datos del nuevo usuario como respuesta JSON
     return jsonify({"user": new_user.serialize()}), 200
+
+@api.route("/current-user", methods=["GET"])
+@jwt_required()  # Requiere que el usuario esté autenticado con JWT
+def get_current_user():
+    # Obtiene la identidad del usuario actual desde el token JWT
+    current_user_id = get_jwt_identity()
+    # Verifica si no se encontró la identidad del usuario
+    if current_user_id is None:
+        return jsonify({"msg": "Usuario no encontrado"}), 401
+    # Busca al usuario en la base de datos usando su id
+    user_query = User.query.get(current_user_id)
+    # Si no se encuentra el usuario, devuelve un mensaje de error
+    if user_query is None:
+        return jsonify({"msg": "Usuario no encontrado"}), 401
+    # Serializa los datos del usuario para enviarlos como JSON
+    user = user_query.serialize()
+    # Devuelve los datos del usuario actual como respuesta JSON
+    return jsonify(current_user=user), 200
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
