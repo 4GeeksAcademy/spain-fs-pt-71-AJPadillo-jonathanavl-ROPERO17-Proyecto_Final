@@ -7,6 +7,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    preferred_genres = db.Column(db.String(200))  # Almacena géneros preferidos como una cadena separada por comas
 
     def __repr__(self):
         return f'<User {self.email}>'
@@ -15,5 +16,6 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
-            # do not serialize the password, its a security breach
+            "is_active": self.is_active,
+            "preferred_genres": self.preferred_genres
         }
