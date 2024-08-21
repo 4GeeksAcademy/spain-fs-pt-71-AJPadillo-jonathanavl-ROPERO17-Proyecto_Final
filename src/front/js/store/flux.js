@@ -43,6 +43,34 @@ const getState = ({ getStore, getActions, setStore }) => {
 				});
 			},
 
+			createUser: async (email, password) => {
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "/api/signup", {
+						method: "POST", // Especifica que la solicitud es de tipo POST
+						headers: {
+							"Content-Type": "application/json", // Especifica que el contenido es JSON
+						},
+						body: JSON.stringify({
+							email, // Incluye el email en el cuerpo de la solicitud
+							password // Incluye la contraseña en el cuerpo de la solicitud
+						}),
+					});
+					if (response.status === 200) { // Verifica si la respuesta es exitosa
+						const data = await response.json(); // Transformar la respuesta como JSON
+						console.log("Usuario creado:", data);
+						return true; // Retorna true si la creación fue exitosa
+					} else {
+						// Si la respuesta no es exitosa, lanza un error
+						const errorData = await response.json(); // Transformar la respuesta como JSON
+						console.error("Error al crear usuario:", errorData.message);
+						return false; // Retorna false si hubo un error
+					}
+				} catch (error) {
+					console.error("Error al crear usuario:", error); // Captura y muestra errores en la consola
+					return false; // Retorna false si hubo un error durante la solicitud
+				}
+			},
+
 			/////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try{
