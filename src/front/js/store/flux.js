@@ -1,26 +1,40 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			message: "",
+			token: "",
+			currentUser: null,
+			isLoggedIn: false,
+			users: [],
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
+			login: async (email, password) => {
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "/api/login", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({ email, password }) // Envía el email y el password como un objeto JSON en el cuerpo de la solicitud
+					});
+					if (response.status === 200) { // Verifica si la respuesta de la API fue exitosa (código 200)
+						const data = await response.json(); // Convierte la respuesta en formato JSON
+						const accessToken = data.access_token;
+						if (accessToken) {
+							localStorage.setItem("accessToken", accessToken); // Guarda el token recibido en el localStorage del navegador
+							await getActions().getCurrentUser(); // Obtiene la información del usuario actual
+							console.log("Login successful"); // Mensaje de éxito en la consola
+							console.log("Token:", data.access_token); // Muestra el token en la consola
+							return true;
+						}
+						return false;
+					}
+				} catch (error) {
+					console.error("Error al logear (flux.js):", error); // Captura y muestra cualquier error que ocurra durante el proceso
+				}
 			},
 
+			/////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try{
 					// fetching data from the backend
@@ -33,20 +47,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log("Error loading message from backend", error)
 				}
 			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
-
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
-
-				//reset the global store
-				setStore({ demo: demo });
-			}
 		}
 	};
 };
