@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
-
+import logo from '../../img/logo.png';
 export const Navbar = () => {
     const { store, actions } = useContext(Context);
     const navigate = useNavigate();
@@ -12,20 +12,16 @@ export const Navbar = () => {
         navigate("/");
     };
 
-    return (
+     return (
         <nav className="navbar navbar-light bg-light mb-3">
             <div className="container">
                 <Link to="/">
-                    <span className="navbar-brand mb-0 h1"><img src="" style={{ width: "150px" }} />Logo</span>
+                    <img src={logo} alt="Logo" style={{ width: "150px" }} className="navbar-brand" />
                 </Link>
-                <div className="ml-auto d-flex">
-                    <div className="m-auto">
-                        {store.isLoggedIn && (
-                            <p className="mb-0 mx-3">Hola, {store.currentUser.email}</p>
-                        )}
-                    </div>
-                    
-                    {/* Botones de inicio de sesión/registro o cerrar sesión según el estado de autenticación */}
+                <div className="d-flex ml-auto align-items-center">
+                    {store.isLoggedIn && (
+                        <p className="mb-0 mx-3">Hello, {store.currentUser.email}</p>
+                    )}
                     {!store.isLoggedIn ? (
                         <>
                             <Link to="/login">
@@ -38,9 +34,7 @@ export const Navbar = () => {
                     ) : (
                         <button className="btn btn-outline-danger" onClick={handleLogout}>Logout</button>
                     )}
-
                 </div>
-
             </div>
         </nav>
     );

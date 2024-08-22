@@ -1,0 +1,199 @@
+.profile-container {
+    background-color: #f5f5f531;
+    padding: 40px 20px;
+    min-height: 100vh;
+    border-radius: 18px;
+}
+
+/* Fila que contiene la tarjeta de perfil y el contenido principal */
+.profile-row {
+    display: flex;
+}
+
+/* Estilos para la tarjeta de perfil */
+.profile-left {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; 
+}
+
+.profile-card {
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #DDDDDD;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.avatar-img {
+    width: 100%;
+    height: auto;
+    justify-content: center;
+    border: 3px solid rgba(176, 176, 176, 0.185);
+    margin-bottom: 20px;
+    display: block;
+}
+
+/* Estilos para la información del usuario */
+.my-profile-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6%;
+}
+.my-profile {
+    color: #000000;
+    font-size: 24px;
+    font-weight: 600;
+}
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #28a745;
+    vertical-align: middle;
+    margin-left: 30%;
+    box-shadow: 0 0 8px rgba(40, 167, 69, 0.6);
+}
+.status-text {
+    margin-left: 1px;
+    color: #000000a1;
+    font-size: 18px;
+    vertical-align: middle;
+}
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name-phone {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.user-name {
+    color: #000000a1;
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0;
+    position: relative;
+}
+
+.user-name::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background-color: rgba(176, 176, 176, 0.295);
+    position: absolute;
+    bottom: -3px;
+    width: 100%;
+}
+
+.user-phone {
+    color: rgba(176, 176, 176, 0.8);
+    font-size: 15px;
+    margin: 0;
+    position: relative; 
+}
+
+.user-phone::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background-color: rgba(176, 176, 176, 0.295);
+    position: absolute;
+    bottom: -3px;
+    width: 100%;
+}
+
+.user-email {
+    color: #000000a1;
+    font-size: 17px;
+    position: relative;
+}
+
+.user-email::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background-color: rgba(176, 176, 176, 0.295); 
+    position: absolute;
+    bottom: -3px; 
+    width: 100%;
+}
+
+/* Estilos para las tarjetas a la derecha */
+.profile-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-right .profile-card {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #FFFFFF;
+    color: #000000; 
+    border: 1px solid #DDDDDD; 
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-right .profile-card .card-title {
+    color: #000000;
+    font-size: 18px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+/* Línea horizontal gris debajo del título */
+.profile-right .profile-card .card-title::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background-color: rgba(176, 176, 176, 0.185); 
+    margin-top: 5px;
+}
+
+/* Estilos para el texto dentro de las tarjetas */
+.profile-right .profile-card .card-text {
+    color: #333333; 
+    font-size: 16px;
+}
+
+.card-link {
+    display: block;
+    margin-top: 7px;
+    color: #5b00ee52;
+    text-decoration: underline;
+}
+
+.review-list {
+    margin-top: 10px;
+}
+
+.review-item {
+    margin-bottom: 20px;
+}
+
+.review-item h5 {
+    font-size: 16px;
+    color: #000000;
+    margin: 0;
+}
+
+.review-item p {
+    font-size: 14px;
+    color: #333333;
+    margin: 0;
+}
+
+.review-rating {
+    font-size: 14px;
+    color: #f5d105; 
+    margin-top: 5px;
+}
