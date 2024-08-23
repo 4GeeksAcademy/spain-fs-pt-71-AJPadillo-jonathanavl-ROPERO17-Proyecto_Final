@@ -94,22 +94,6 @@
     width: 100%;
 }
 
-.user-phone {
-    color: rgba(176, 176, 176, 0.8);
-    font-size: 15px;
-    margin: 0;
-    position: relative; 
-}
-
-.user-phone::after {
-    content: "";
-    display: block;
-    height: 1px;
-    background-color: rgba(176, 176, 176, 0.295);
-    position: absolute;
-    bottom: -3px;
-    width: 100%;
-}
 
 .user-email {
     color: #000000a1;

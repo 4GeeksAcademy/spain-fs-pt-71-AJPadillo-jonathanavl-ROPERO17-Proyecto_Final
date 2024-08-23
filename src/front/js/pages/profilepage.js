@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Image } from 'react-bootstrap';
-import './ProfilePage.css'; // Importa el archivo CSS para los estilos personalizados
+import './ProfilePage.css';
 
 export const ProfilePage = () => {
     const [email, setEmail] = useState('');
@@ -12,9 +12,8 @@ export const ProfilePage = () => {
 
     // Simulando la obtención de datos del usuario y de eventos, posts y reseñas
     useEffect(() => {
-        // Simulación de llamada a la API para obtener el email y teléfono del usuario
+        // Simulación de llamada a la API para obtener el email
         setEmail('usuario@example.com');
-        setPhone('123-456-7890');
 
         // Simulación de llamada a la API para obtener eventos
         setEvents([
