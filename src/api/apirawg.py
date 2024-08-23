@@ -5,10 +5,11 @@ app = FastAPI
 
 RAWG_API_URL = "https://api.rawg.io/api"
 
-RAWG_API_KEY = si quieren la podemos cambiar
+RAWG_API_KEY = "PLAY_LIFE_RAWG" #si quieren la podemos cambiar
 
 @app.get("/games")
 async def get_games(page: int = 1, page_size: int = 10):
+    
     try :
          url = f"{RAWG_API_URL}/games?page={page}&page_size={page_size}&key={RAWG_API_KEY}"
         # Hace la solicitud a la API externa
@@ -16,6 +17,7 @@ async def get_games(page: int = 1, page_size: int = 10):
               response = await client.get(url)
               response.raise_for_status() # Esto tira una excepcion por si la solicitud falla
               data = response. json()
+
          return data # Devuelve la respuesta de la API externa
 
     except httpx.HTTPStatusError as e:
