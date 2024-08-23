@@ -22,6 +22,7 @@ export const Navbar = () => {
                     {store.isLoggedIn && (
                         <p className="mb-0 mx-3">Hello, {store.currentUser.email}</p>
                     )}
+                    {/* Botones de inicio de sesión/registro o cerrar sesión según el estado de autenticación */}
                     {!store.isLoggedIn ? (
                         <>
                             <Link to="/login">
