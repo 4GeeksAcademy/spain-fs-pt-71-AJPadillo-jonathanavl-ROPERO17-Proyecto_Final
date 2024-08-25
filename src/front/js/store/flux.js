@@ -6,6 +6,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			currentUser: null,
 			isLoggedIn: false,
 			users: [],
+			searchResults: []
 		},
 		actions: {
 			login: async (email, password) => {
@@ -103,7 +104,26 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
+			searchGames: async (query) => {
+				try {
+					const response = await fetch(
+						`https://api.rawg.io/api/games?key=YOUR_API_KEY&search=${query}` //PENDIENTE SABER MODIFICACION ARCHIVO ENV
+					);
+					const data = await response.json();
+					// Formatear los resultados para que solo incluyan el ID y el nombre del juego
+					const formattedResults = data.results.map((game) => ({
+						id: game.id,
+						name: game.name
+					}));
+					// Actualizar el store con los resultados de búsqueda
+					setStore({ searchResults: formattedResults });
+				} catch (error) {
+					console.error("Error fetching games:", error);
+				}
+			},
+
 			/////////////////////////////////////////////////////////////////////////////////////////
+			// Acción para obtener un mensaje (ejemplo de backend)
 			getMessage: async () => {
 				try{
 					// fetching data from the backend
