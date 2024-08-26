@@ -6,6 +6,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 			currentUser: null,
 			isLoggedIn: false,
 			users: [],
+			games:[],
+			genres:[],
+			gameDetails: null,// Aqui almacenamos los detalles del juego selecionado
 		},
 		actions: {
 			login: async (email, password) => {
@@ -116,6 +119,53 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log("Error loading message from backend", error)
 				}
 			},
+			//Accion para obtener Juegos
+			getGames: async () => {
+				try {
+					const reponse = await fetch(process.env.API_RAWG_GET_URL + "/games")
+					if (response.ok) {
+						const data = await response.json();
+						setStore({games: data.results})//Actualizamos el store con los juegos
+
+					}
+					else{
+						console.error("Error fetching games:", response.statusText);
+					}
+				}
+				catch (error){
+					console.error("Error fetching games:", error)
+				}
+			},
+			//Accion para obtener generos
+			getGenres: async () => {
+				try{
+					const response = await fetch(process.env.API_RAWG_GET_URL + "/genres")
+					if (response.ok){
+						const data = await response.json();
+						setStore({genres: data.results});//Actualizamos el store con los generos
+					}
+					else {
+                        console.error("Error fetching genres:", response.statusText);
+                    }
+                } catch (error) {
+                    console.error("Error fetching genres:", error);
+                }
+			},
+			//Accion para obtener juegos por id
+			getGameById: async (gameId) =>{
+				try {
+					const response = await fetch(process.env.API_RAWG_GET_URL + `/games/${gameId}`)
+					if (response.ok){
+						const data = await response.json();
+						setStore({gameDetails: data}); // Actualizamos el store con los detalles del juego
+					}
+					else {
+                        console.error("Error fetching game by ID:", response.statusText);
+                    }
+                } catch (error) {
+                    console.error("Error fetching game by ID:", error);
+                }
+            },
 		}
 	};
 };
