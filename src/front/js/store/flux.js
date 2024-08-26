@@ -6,8 +6,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 			currentUser: null,
 			isLoggedIn: false,
 			users: [],
-			games:[],
-			genres:[],
+			games: [],
+			genres: [],
 			gameDetails: null,// Aqui almacenamos los detalles del juego selecionado
 			searchResults: []
 		},
@@ -37,65 +37,65 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error al logear (flux.js):", error); // Captura y muestra cualquier error que ocurra durante el proceso
 				}
 			},
-      
-            logout: () => {
-                localStorage.removeItem("accessToken");
-                setStore({
-                    currentUser: null,
-                    isLoggedIn: false,
-                });
-            },
 
-            createUser: async (email, password) => {
-                try {
-                    const response = await fetch(process.env.BACKEND_URL + "/api/signup", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ email, password }),
-                    });
-                    if (response.status === 200) {
-                        const data = await response.json();
-                        console.log("Usuario creado:", data);
-                        return true;
-                    } else {
-                        const errorData = await response.json();
-                        console.error("Error al crear usuario:", errorData.message);
-                        return false;
-                    }
-                } catch (error) {
-                    console.error("Error al crear usuario:", error);
-                    return false;
-                }
-            },
+			logout: () => {
+				localStorage.removeItem("accessToken");
+				setStore({
+					currentUser: null,
+					isLoggedIn: false,
+				});
+			},
 
-            getCurrentUser: async () => {
-                try {
-                    const accessToken = localStorage.getItem("accessToken");
-                    const response = await fetch(process.env.BACKEND_URL + "/api/current-user", {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                            "Content-Type": "application/json"
-                        }
-                    });
-                    if (response.status === 200) {
-                        const data = await response.json();
-                        const currentUser = data.current_user;
-                        setStore({ currentUser, isLoggedIn: true });
-                    } else {
-                        throw new Error("Failed to fetch current user");
-                    }
-                } catch (error) {
-                    console.log("Error loading message from backend", error);
-                    localStorage.removeItem("accessToken");
-                    setStore({
-                        currentUser: null,
-                        isLoggedIn: false,
-                    });
-                }
-            },
+			createUser: async (email, password) => {
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "/api/signup", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({ email, password }),
+					});
+					if (response.status === 200) {
+						const data = await response.json();
+						console.log("Usuario creado:", data);
+						return true;
+					} else {
+						const errorData = await response.json();
+						console.error("Error al crear usuario:", errorData.message);
+						return false;
+					}
+				} catch (error) {
+					console.error("Error al crear usuario:", error);
+					return false;
+				}
+			},
+
+			getCurrentUser: async () => {
+				try {
+					const accessToken = localStorage.getItem("accessToken");
+					const response = await fetch(process.env.BACKEND_URL + "/api/current-user", {
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+							"Content-Type": "application/json"
+						}
+					});
+					if (response.status === 200) {
+						const data = await response.json();
+						const currentUser = data.current_user;
+						setStore({ currentUser, isLoggedIn: true });
+					} else {
+						throw new Error("Failed to fetch current user");
+					}
+				} catch (error) {
+					console.log("Error loading message from backend", error);
+					localStorage.removeItem("accessToken");
+					setStore({
+						currentUser: null,
+						isLoggedIn: false,
+					});
+				}
+			},
 
 			searchGames: async (query) => {
 				try {
@@ -113,30 +113,30 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error fetching games:", error);
 				}
 			},
-      
-      updateProfileImage: async (newImage) => {
-                try {
-                    const accessToken = localStorage.getItem("accessToken");
-                    const response = await fetch(process.env.BACKEND_URL + "/api/update-avatar", {
-                        method: "PUT",
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ avatar: newImage })
-                    });
 
-                    if (response.status === 200) {
-                        const updatedUser = await response.json();
-                        setStore({ currentUser: updatedUser });
-                        console.log("Imagen de perfil actualizada con éxito");
-                    } else {
-                        console.error("Error al actualizar la imagen de perfil");
-                    }
-                } catch (error) {
-                    console.error("Error al actualizar la imagen de perfil:", error);
-                }
-            },
+			updateProfileImage: async (newImage) => {
+				try {
+					const accessToken = localStorage.getItem("accessToken");
+					const response = await fetch(process.env.BACKEND_URL + "/api/update-avatar", {
+						method: "PUT",
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({ avatar: newImage })
+					});
+
+					if (response.status === 200) {
+						const updatedUser = await response.json();
+						setStore({ currentUser: updatedUser });
+						console.log("Imagen de perfil actualizada con éxito");
+					} else {
+						console.error("Error al actualizar la imagen de perfil");
+					}
+				} catch (error) {
+					console.error("Error al actualizar la imagen de perfil:", error);
+				}
+			},
 
 			//Accion para obtener Juegos
 			getGames: async () => {
@@ -144,51 +144,51 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const reponse = await fetch(process.env.API_RAWG_GET_URL + "/games")
 					if (response.ok) {
 						const data = await response.json();
-						setStore({games: data.results})//Actualizamos el store con los juegos
+						setStore({ games: data.results })//Actualizamos el store con los juegos
 
 					}
-					else{
+					else {
 						console.error("Error fetching games:", response.statusText);
 					}
 				}
-				catch (error){
+				catch (error) {
 					console.error("Error fetching games:", error)
 				}
 			},
-      
+
 			//Accion para obtener generos
 			getGenres: async () => {
-				try{
+				try {
 					const response = await fetch(process.env.API_RAWG_GET_URL + "/genres")
-					if (response.ok){
+					if (response.ok) {
 						const data = await response.json();
-						setStore({genres: data.results});//Actualizamos el store con los generos
+						setStore({ genres: data.results });//Actualizamos el store con los generos
 					}
 					else {
-                        console.error("Error fetching genres:", response.statusText);
-                    }
-                } catch (error) {
-                    console.error("Error fetching genres:", error);
-                }
+						console.error("Error fetching genres:", response.statusText);
+					}
+				} catch (error) {
+					console.error("Error fetching genres:", error);
+				}
 			},
-      
+
 			//Accion para obtener juegos por id
-			getGameById: async (gameId) =>{
+			getGameById: async (gameId) => {
 				try {
 					const response = await fetch(process.env.API_RAWG_GET_URL + `/games/${gameId}`)
-					if (response.ok){
+					if (response.ok) {
 						const data = await response.json();
-						setStore({gameDetails: data}); // Actualizamos el store con los detalles del juego
+						setStore({ gameDetails: data }); // Actualizamos el store con los detalles del juego
 					}
 					else {
-                        console.error("Error fetching game by ID:", response.statusText);
-                    }
-                } catch (error) {
-                    console.error("Error fetching game by ID:", error);
-                }
-            },
-      
-      /////////////////////////////////////////////////////////////////////////////////////////
+						console.error("Error fetching game by ID:", response.statusText);
+					}
+				} catch (error) {
+					console.error("Error fetching game by ID:", error);
+				}
+			},
+
+			/////////////////////////////////////////////////////////////////////////////////////////
 			// Acción para obtener un mensaje (ejemplo de backend)
 			getMessage: async () => {
 				try {
