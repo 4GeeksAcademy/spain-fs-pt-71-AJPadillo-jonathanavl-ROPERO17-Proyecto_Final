@@ -49,27 +49,12 @@
     font-size: 24px;
     font-weight: 600;
 }
-.status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #28a745;
-    vertical-align: middle;
-    margin-left: 30%;
-    box-shadow: 0 0 8px rgba(40, 167, 69, 0.6);
-}
-.status-text {
-    margin-left: 1px;
-    color: #000000a1;
-    font-size: 18px;
-    vertical-align: middle;
-}
 .user-info {
     display: flex;
     flex-direction: column;
 }
 
-.user-name-phone {
+.user-name-more-data {
     display: flex;
     justify-content: space-between; 
     align-items: center;
@@ -180,4 +165,26 @@
     font-size: 14px;
     color: #f5d105; 
     margin-top: 5px;
+}
+
+.circle-button {
+    background-color: #d3d3d3;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.circle-button img.pencil-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.circle-button:hover {
+    background-color: #b0b0b0; 
 }

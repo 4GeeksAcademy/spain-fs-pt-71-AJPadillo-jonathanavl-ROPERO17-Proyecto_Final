@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 
 export const Signup = () => {
-    // Definimos los estados locales para el email y la contraseña
+    // Definimos los estados locales para el email, username y la contraseña
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     // Obtenemos el contexto global para acceder a las acciones
     const { store, actions } = useContext(Context);
     // Usamos navigate para redirigir después de un registro exitoso
@@ -24,39 +25,48 @@ export const Signup = () => {
     };
 
     return (
-        <div className="container d-flex justify-content-center align-items-center vh-100">
-            <div className="card p-4" style={{ maxWidth: '500px', width: '100%' }}>
-                <div className="card-body">
-                    <h2 className="m-auto text-center display-4 mb-4">Signup</h2>
-                    <form onSubmit={handleSignup}>
-                        <div className="mb-3">
-                            <label htmlFor="exampleInputEmail1" className="form-label">Email address</label>
+    <div className="container d-flex justify-content-center align-items-center vh-100">
+        <div className="card p-4" style={{ maxWidth: '500px', width: '100%' }}>
+            <div className="card-body">
+                <h2 className="m-auto text-center display-4 mb-4">Signup</h2>
+                <form onSubmit={handleSignup}>
+                <div className="mb-3">
+                            <label htmlFor="username" className="form-label">Username</label>
                             <input
-                                type="email"
+                                type="text"
                                 className="form-control"
-                                id="exampleInputEmail1"
-                                aria-describedby="emailHelp"
-                                value={email} // El valor del input está vinculado al estado email
-                                onChange={(e) => setEmail(e.target.value)} // Actualizamos el estado email al cambiar el input
-                                required
+                                id="username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                             />
                         </div>
-                        <div className="mb-3">
-                            <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                            <input
-                                type="password"
-                                className="form-control"
-                                id="exampleInputPassword1"
-                                value={password} // El valor del input está vinculado al estado password
-                                onChange={(e) => setPassword(e.target.value)} // Actualizamos el estado password al cambiar el input
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="btn btn-primary w-100">Submit</button>
-                    </form>
-                </div>
+                    <div className="mb-3">
+                        <label htmlFor="exampleInputEmail1" className="form-label">Email address</label>
+                        <input
+                            type="email"
+                            className="form-control"
+                            id="exampleInputEmail1"
+                            aria-describedby="emailHelp"
+                            value={email} // El valor del input está vinculado al estado email
+                            onChange={(e) => setEmail(e.target.value)} // Actualizamos el estado email al cambiar el input
+                            required
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            id="exampleInputPassword1"
+                            value={password} // El valor del input está vinculado al estado password
+                            onChange={(e) => setPassword(e.target.value)} // Actualizamos el estado password al cambiar el input
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary w-100">Submit</button>
+                </form>
             </div>
         </div>
-    );
-    
+    </div>
+);
 };

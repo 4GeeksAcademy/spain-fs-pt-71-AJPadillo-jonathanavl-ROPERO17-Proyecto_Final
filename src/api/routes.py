@@ -74,3 +74,25 @@ def handle_hello():
     }
 
     return jsonify(response_body), 200
+@api.route('/update-avatar', methods=['PUT'])
+@jwt_required()
+def update_avatar():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+    new_avatar_url = data.get('avatar')
+
+    # Verificar si se proporciona una nueva imagen
+    if not new_avatar_url:
+        return jsonify({"msg": "No image URL provided"}), 400
+
+    # Buscar al usuario en la base de datos
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    # Actualizar la imagen de perfil del usuario
+    user.profile_image = new_avatar_url
+    db.session.commit()
+
+    # Serializar y devolver la información actualizada del usuario
+    return jsonify(user.serialize()), 200
