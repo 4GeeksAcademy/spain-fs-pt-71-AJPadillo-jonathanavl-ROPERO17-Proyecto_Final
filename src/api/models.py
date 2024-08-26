@@ -23,3 +23,19 @@ class User(db.Model):
             "profile_image": self.profile_image,
             "preferred_genres": self.preferred_genres
         }
+    
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, nullable=False)  # Este es el ID del juego desde la API RAWG
+    username = db.Column(db.String(50), nullable=False)
+    comment = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "game_id": self.game_id,
+            "username": self.username,
+            "comment": self.comment,
+            "created_at": self.created_at
+        }
