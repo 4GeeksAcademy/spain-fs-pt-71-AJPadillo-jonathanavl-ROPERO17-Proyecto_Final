@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User
+from api.models import db, User, Review
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
@@ -66,14 +66,32 @@ def get_current_user():
     # Devuelve los datos del usuario actual como respuesta JSON
     return jsonify(current_user=user), 200
 
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
+@api.route('/reviews/<int:game_id>', methods=['GET'])
+def get_reviews(game_id):
+    reviews = Review.query.filter_by(game_id=game_id).all()
+    return jsonify([review.to_dict() for review in reviews])
 
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
+@api.route('/reviews', methods=['POST'])
+def add_review():
+    data = request.json
+    new_review = Review(
+        game_id=data['game_id'],
+        username=data['username'],
+        comment=data['comment'],
+        rating=data['rating']
+    )
+    db.session.add(new_review)
+    db.session.commit()
+    return jsonify(new_review.to_dict()), 201
 
-    return jsonify(response_body), 200
+@api.route('/reviews/<int:review_id>', methods=['DELETE'])
+def delete_review(review_id):
+    review = Review.query.get_or_404(review_id)
+    db.session.delete(review)
+    db.session.commit()
+    return jsonify({"message": "Review deleted successfully"}), 200
+
+
 @api.route('/update-avatar', methods=['PUT'])
 @jwt_required()
 def update_avatar():
@@ -96,3 +114,16 @@ def update_avatar():
 
     # Serializar y devolver la información actualizada del usuario
     return jsonify(user.serialize()), 200
+
+@api.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    all_users = list(map(lambda x: x.serialize(), users))
+    return jsonify(all_users), 200
+
+@api.route('/hello', methods=['POST', 'GET'])
+def handle_hello():
+    response_body = {
+        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
+    }
+    return jsonify(response_body), 200

@@ -99,7 +99,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			searchGames: async (query) => {
 				try {
-					const response = await fetch(process.env.API_RAWG_GET_URL + `?key=` + process.env.API_RAWG_KEY + `&search=${query}` //PENDIENTE SABER MODIFICACION ARCHIVO ENV
+					const response = await fetch(process.env.API_RAWG_GET_URL + `/games?key=` + process.env.API_RAWG_KEY + `&search=${query}` //PENDIENTE SABER MODIFICACION ARCHIVO ENV
 					);
 					const data = await response.json();
 					// Formatear los resultados para que solo incluyan el ID y el nombre del juego
@@ -141,7 +141,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			//Accion para obtener Juegos
 			getGames: async () => {
 				try {
-					const reponse = await fetch(process.env.API_RAWG_GET_URL + "/games")
+					const response = await fetch(process.env.API_RAWG_GET_URL + `/games?key=` + process.env.API_RAWG_KEY)
 					if (response.ok) {
 						const data = await response.json();
 						setStore({ games: data.results })//Actualizamos el store con los juegos
@@ -159,7 +159,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			//Accion para obtener generos
 			getGenres: async () => {
 				try {
-					const response = await fetch(process.env.API_RAWG_GET_URL + "/genres")
+					const response = await fetch(process.env.API_RAWG_GET_URL + "/genres?key=" + process.env.API_RAWG_KEY)
 					if (response.ok) {
 						const data = await response.json();
 						setStore({ genres: data.results });//Actualizamos el store con los generos
@@ -175,7 +175,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			//Accion para obtener juegos por id
 			getGameById: async (gameId) => {
 				try {
-					const response = await fetch(process.env.API_RAWG_GET_URL + `/games/${gameId}`)
+					const response = await fetch(process.env.API_RAWG_GET_URL + `/games/${gameId}` + process.env.API_RAWG_KEY)
 					if (response.ok) {
 						const data = await response.json();
 						setStore({ gameDetails: data }); // Actualizamos el store con los detalles del juego
