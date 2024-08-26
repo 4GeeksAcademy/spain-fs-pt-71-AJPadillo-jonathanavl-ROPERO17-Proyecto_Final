@@ -9,9 +9,11 @@ import injectContext from "./store/appContext";
 
 import { Login } from "./pages/login";
 import { Signup } from "./pages/signup";
+import { ProfilePage } from "./pages/profilepage";
 
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
+import '../styles/home.css';
 
 //create your first component
 const Layout = () => {
@@ -22,7 +24,7 @@ const Layout = () => {
     if(!process.env.BACKEND_URL || process.env.BACKEND_URL == "") return <BackendURL/ >;
 
     return (
-        <div>
+        <div className="app-background">
             <BrowserRouter basename={basename}>
                 <ScrollToTop>
                     <Navbar />
@@ -31,6 +33,7 @@ const Layout = () => {
                         <Route element={<Login />} path="/login" />
                         <Route element={<Signup />} path="/signup" />
                         <Route element={<Single />} path="/single/:theid" />
+                        <Route element={<ProfilePage />} path="/profilepage" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                     <Footer />
