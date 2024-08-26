@@ -106,8 +106,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			searchGames: async (query) => {
 				try {
-					const response = await fetch(
-						`https://api.rawg.io/api/games?key=YOUR_API_KEY&search=${query}` //PENDIENTE SABER MODIFICACION ARCHIVO ENV
+					const response = await fetch(process.env.API_RAWG_GET_URL + `?key=` + process.env.API_RAWG_KEY + `&search=${query}` //PENDIENTE SABER MODIFICACION ARCHIVO ENV
 					);
 					const data = await response.json();
 					// Formatear los resultados para que solo incluyan el ID y el nombre del juego
@@ -125,14 +124,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 			/////////////////////////////////////////////////////////////////////////////////////////
 			// Acción para obtener un mensaje (ejemplo de backend)
 			getMessage: async () => {
-				try{
+				try {
 					// fetching data from the backend
 					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
 					const data = await resp.json()
 					setStore({ message: data.message })
 					// don't forget to return something, that is how the async resolves
 					return data;
-				}catch(error){
+				} catch (error) {
 					console.log("Error loading message from backend", error)
 				}
 			},
