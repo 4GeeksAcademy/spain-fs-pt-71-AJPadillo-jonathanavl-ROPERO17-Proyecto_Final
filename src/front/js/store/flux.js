@@ -9,7 +9,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 			games: [],
 			genres: [],
 			gameDetails: null,// Aqui almacenamos los detalles del juego selecionado
-			searchResults: []
+			searchResults: [],
+			reviews: [],// Almacena las reseñas
+			currentPage: 1, // Almacena la página actual para la paginación
+			totalPages: 1, // Almacena el número total de páginas disponibles
 		},
 		actions: {
 			login: async (email, password) => {
@@ -187,6 +190,53 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error fetching game by ID:", error);
 				}
 			},
+			// Acción para obtener las reseñas 
+			fetchReviews: async (page = 1) => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/reviews?page=${page}`);
+					if (response.ok) {
+						const data = await response.json();
+						setStore({
+							reviews: data.reviews,
+							currentPage: data.page,
+							totalPages: data.total_pages,
+						});
+					} else {
+						console.error("Error al cargar las reseñas");
+					}
+				} catch (error) {
+					console.error("Error en fetchReviews:", error);
+				}
+			},
+
+			// Acción para agregar una nueva reseña
+			addReview: async (review) => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/reviews`, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(review),
+					});
+					if (response.ok) {
+						// Si la reseña se ha añadido correctamente, recarga las reseñas
+						getActions().fetchReviews(getStore().currentPage);
+					} else {
+						console.error("Error al agregar la reseña");
+					}
+				} catch (error) {
+					console.error("Error en addReview:", error);
+				}
+			},
+
+			// Acción para cambiar de página en la paginación
+			changePage: (page) => {
+				const { fetchReviews } = getActions();
+				fetchReviews(page); // Llama a fetchReviews con la nueva página
+			},
+		},
+	
 
 			/////////////////////////////////////////////////////////////////////////////////////////
 			// Acción para obtener un mensaje (ejemplo de backend)
@@ -202,7 +252,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log("Error loading message from backend", error)
 				}
 			},
-		}
+		
 	};
 
 };
