@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../store/appContext";
 import { Carousel, Container, Row, Col } from 'react-bootstrap';
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styles/home.css";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
+    const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
@@ -43,6 +45,9 @@ export const Home = () => {
         const decimalScore = score / 10;
         return decimalScore === 0 ? "N/A" : decimalScore.toFixed(1);
     };
+    const navigateToDetails = (id) => {
+        navigate(`/game/${id}`);
+    };
 
     return (
         <Container className="my-4">
@@ -65,7 +70,7 @@ export const Home = () => {
                                             <h5 className="card-title">{game.name}</h5>
                                             <p className="card-text">Released: {game.released}</p>
                                             <p className="card-text">Genres: {game.genres.map(genre => genre.name).join(', ')}</p>
-                                            <p className="card-button">Details</p>
+                                            <button className="card-button" onClick={() => navigateToDetails(game.id)}>Details</button>
                                         </div>
                                         <div className={`metacritic-score ${getMetacriticClass(game.metacritic)}`}>
                                             {formatMetacritic(game.metacritic)}

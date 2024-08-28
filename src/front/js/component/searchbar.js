@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Context } from "../store/appContext";
+import { useNavigate } from "react-router-dom";
 
 const SearchBar = () => {
     const { store, actions } = React.useContext(Context);
     const [query, setQuery] = useState("");
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const searchBarRef = useRef(null);
+    const navigate = useNavigate();
 
     // Manejador para cuando se escriba en la barra de búsqueda
     const handleInputChange = (e) => {
@@ -31,6 +33,11 @@ const SearchBar = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const handleResultClick = (gameId) => {
+        navigate(`/game/${gameId}`);
+        setQuery("");
+        setDropdownOpen(false);
+    };
     return (
         <div className="search-bar-container" ref={searchBarRef}>
             <input
@@ -43,9 +50,13 @@ const SearchBar = () => {
             {isDropdownOpen && query && store.searchResults.length > 0 && (
                 <ul className="search-dropdown">
                     {store.searchResults.map((game) => (
-                        <li key={game.id} className="search-result-item">
-                            {game.name} {/* Muestra solo el nombre del juego */}
-                        </li>
+                         <li 
+                         key={game.id} 
+                         className="search-result-item"
+                         onClick={() => handleResultClick(game.id)} // Add click handler
+                     >
+                         {game.name} {/* Show only the game name */}
+                     </li>
                     ))}
                 </ul>
             )}

@@ -10,6 +10,7 @@ import injectContext from "./store/appContext";
 import { Login } from "./pages/login";
 import { Signup } from "./pages/signup";
 import { ProfilePage } from "./pages/profilepage";
+import { GameDetailsPage } from "./pages/GameDetailsPage";
 
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
@@ -34,6 +35,7 @@ const Layout = () => {
                         <Route element={<Signup />} path="/signup" />
                         <Route element={<Single />} path="/single/:theid" />
                         <Route element={<ProfilePage />} path="/profilepage" />
+                        <Route element={<GameDetailsPage />} path="/game/:gameId" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                     <Footer />
