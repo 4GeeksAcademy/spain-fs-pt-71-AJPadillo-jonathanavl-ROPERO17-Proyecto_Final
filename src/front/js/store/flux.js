@@ -158,13 +158,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error fetching games:", error)
 				}
 			},
-			
+
 			loadMoreGames: async () => {
 				try {
 					const store = getStore();
 					const currentLength = store.games.length;
 					const response = await fetch(process.env.API_RAWG_GET_URL + `/games?key=` + process.env.API_RAWG_KEY + `&page=${Math.floor(currentLength / 20) + 1}`);
-					
+
 					if (response.ok) {
 						const data = await response.json();
 						setStore({ games: [...store.games, ...data.results] }); // Añadir nuevos juegos a los ya existentes
@@ -253,23 +253,79 @@ const getState = ({ getStore, getActions, setStore }) => {
 				fetchReviews(page); // Llama a fetchReviews con la nueva página
 			},
 		},
-	
+		// Acción para obtener todas las reseñas de un juego específico
+		getReviewsForGame: async (gameId) => {
+			try {
+				// Realiza una solicitud GET al backend para obtener las reseñas de un juego específico
+				const response = await fetch(`${process.env.BACKEND_URL}/reviews?game_id=${gameId}`);
+				const data = await response.json();  // Convierte la respuesta en JSON
+				setStore({ reviews: data });  // Almacena las reseñas en el store
+			} catch (error) {
+				console.error("Error fetching reviews:", error);  // Muestra un error en caso de que la solicitud falle
+			}
+		},
 
-			/////////////////////////////////////////////////////////////////////////////////////////
-			// Acción para obtener un mensaje (ejemplo de backend)
-			getMessage: async () => {
-				try {
-					// fetching data from the backend
-					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
-					const data = await resp.json()
-					setStore({ message: data.message })
-					// don't forget to return something, that is how the async resolves
-					return data;
-				} catch (error) {
-					console.log("Error loading message from backend", error)
+		// Acción para actualizar una reseña existente
+		updateReview: async (reviewId, updatedComment) => {
+			try {
+				// Realiza una solicitud PUT al backend para actualizar una reseña específica
+				const response = await fetch(`${process.env.BACKEND_URL}/reviews/${reviewId}`, {
+					method: "PUT",  // Método HTTP para actualizar recursos
+					headers: {
+						"Content-Type": "application/json"  // Especifica que el cuerpo de la solicitud es JSON
+					},
+					body: JSON.stringify({ comment: updatedComment })  // Envía el comentario actualizado en el cuerpo de la solicitud
+				});
+				if (response.ok) {  // Verifica si la respuesta es exitosa (código 200-299)
+					const updatedReview = await response.json();  // Convierte la respuesta en JSON
+					const store = getStore();  // Obtiene el estado actual del store
+					// Actualiza la reseña en el estado del store
+					const updatedReviews = store.reviews.map(review =>
+						review.id === reviewId ? updatedReview : review
+					);
+					setStore({ reviews: updatedReviews });  // Guarda las reseñas actualizadas en el store
 				}
-			},
-		
+			} catch (error) {
+				console.error("Error updating review:", error);  // Muestra un error en caso de que la solicitud falle
+			}
+		},
+
+		// Acción para borrar una reseña existente
+		deleteReview: async (reviewId) => {
+			try {
+				// Realiza una solicitud DELETE al backend para borrar una reseña específica
+				const response = await fetch(`${process.env.BACKEND_URL}/reviews/${reviewId}`, {
+					method: "DELETE"  // Método HTTP para borrar recursos
+				});
+				if (response.ok) {  // Verifica si la respuesta es exitosa
+					const store = getStore();  // Obtiene el estado actual del store
+					// Filtra la reseña eliminada fuera del estado del store
+					const updatedReviews = store.reviews.filter(review => review.id !== reviewId);
+					setStore({ reviews: updatedReviews });  // Guarda las reseñas actualizadas en el store
+				}
+			} catch (error) {
+				console.error("Error deleting review:", error);  // Muestra un error en caso de que la solicitud falle
+			}
+		},
+
+
+
+
+		/////////////////////////////////////////////////////////////////////////////////////////
+		// Acción para obtener un mensaje (ejemplo de backend)
+		getMessage: async () => {
+			try {
+				// fetching data from the backend
+				const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
+				const data = await resp.json()
+				setStore({ message: data.message })
+				// don't forget to return something, that is how the async resolves
+				return data;
+			} catch (error) {
+				console.log("Error loading message from backend", error)
+			}
+		},
+
 	};
 
 };

@@ -78,7 +78,6 @@ def add_review():
         game_id=data['game_id'],
         username=data['username'],
         comment=data['comment'],
-        rating=data['rating']
     )
     db.session.add(new_review)
     db.session.commit()
