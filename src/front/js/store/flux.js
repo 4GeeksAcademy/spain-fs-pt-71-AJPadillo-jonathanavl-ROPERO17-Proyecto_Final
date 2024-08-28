@@ -155,6 +155,23 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error fetching games:", error)
 				}
 			},
+			
+			loadMoreGames: async () => {
+				try {
+					const store = getStore();
+					const currentLength = store.games.length;
+					const response = await fetch(process.env.API_RAWG_GET_URL + `/games?key=` + process.env.API_RAWG_KEY + `&page=${Math.floor(currentLength / 20) + 1}`);
+					
+					if (response.ok) {
+						const data = await response.json();
+						setStore({ games: [...store.games, ...data.results] }); // Añadir nuevos juegos a los ya existentes
+					} else {
+						console.error("Error fetching more games:", response.statusText);
+					}
+				} catch (error) {
+					console.error("Error fetching more games:", error);
+				}
+			},
 
 			//Accion para obtener generos
 			getGenres: async () => {
