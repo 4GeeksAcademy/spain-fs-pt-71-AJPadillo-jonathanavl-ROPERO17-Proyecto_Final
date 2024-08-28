@@ -91,6 +91,19 @@ def delete_review(review_id):
     db.session.commit()
     return jsonify({"message": "Review deleted successfully"}), 200
 
+@api.route('/reviews/<int:review_id>', methods=['PUT'])
+def update_review(review_id):
+    # Obtener la reseña existente usando el ID
+    review = Review.query.get_or_404(review_id)
+    # Obtener los datos enviados en la solicitud
+    data = request.json
+    # Actualizar los campos de la reseña si están presentes en los datos
+    if 'comment' in data:
+        review.comment = data['comment']
+    # Guardar los cambios en la base de datos
+    db.session.commit()
+    # En la respuesta JSON, convierte la instancia del modelo Review en un diccionario de Python.
+    return jsonify(review.to_dict()), 200
 
 @api.route('/update-avatar', methods=['PUT'])
 @jwt_required()
@@ -98,20 +111,16 @@ def update_avatar():
     user_id = get_jwt_identity()
     data = request.get_json()
     new_avatar_url = data.get('avatar')
-
     # Verificar si se proporciona una nueva imagen
     if not new_avatar_url:
         return jsonify({"msg": "No image URL provided"}), 400
-
     # Buscar al usuario en la base de datos
     user = User.query.get(user_id)
     if not user:
         return jsonify({"msg": "User not found"}), 404
-
     # Actualizar la imagen de perfil del usuario
     user.profile_image = new_avatar_url
     db.session.commit()
-
     # Serializar y devolver la información actualizada del usuario
     return jsonify(user.serialize()), 200
 
