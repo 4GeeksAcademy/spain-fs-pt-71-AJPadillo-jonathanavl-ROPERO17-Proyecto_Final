@@ -195,7 +195,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			//Accion para obtener juegos por id
 			getGameById: async (gameId) => {
 				try {
-					const response = await fetch(process.env.API_RAWG_GET_URL + `/games/${gameId}` + process.env.API_RAWG_KEY)
+					const response = await fetch(process.env.API_RAWG_GET_URL + `/games/${gameId}?key=` + process.env.API_RAWG_KEY)
 					if (response.ok) {
 						const data = await response.json();
 						setStore({ gameDetails: data }); // Actualizamos el store con los detalles del juego

@@ -1,0 +1,110 @@
+/* details.css */
+
+.game-details-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative; /* Ensure parent container is positioned for absolute children */
+}
+
+.game-details-row {
+    margin-bottom: 20px;
+    position: relative; /* Ensure positioning for child elements */
+}
+
+.game-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative; /* Ensure positioning for the Metacritic score */
+}
+
+.metacritic-score {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.metacritic-blue { background-color: #007bff; }
+.metacritic-red { background-color: #dc3545; }
+.metacritic-orange { background-color: #fd7e14; }
+.metacritic-green { background-color: #28a745; }
+
+.game-title {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.game-subtitle {
+    font-size: 1.75rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.game-text {
+    color: #555;
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.game-text strong {
+    color: #333;
+}
+
+.review-card {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.review-card p {
+    margin: 0;
+}
+
+.review-card p:first-of-type {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.separator {
+    border: 0;
+    height: 1px;
+    background: #ddd;
+    margin: 40px 0;
+}
+
+.more-details-link {
+    color: rgb(95, 95, 95);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.game-platform{
+    font-size: 1.75rem;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    color: #333;
+}
+.platforms-list {
+     /* Ajusta el espacio superior según tu necesidad */
+    list-style-type: none; /* Elimina los puntos de la lista */
+    padding: 0; /* Opcional: elimina el padding por defecto */
+}
+
+.platforms-list li {
+    margin-bottom: 10px;
+}
