@@ -308,9 +308,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			}
 		},
 
-
-
-
 		/////////////////////////////////////////////////////////////////////////////////////////
 		// Acción para obtener un mensaje (ejemplo de backend)
 		getMessage: async () => {

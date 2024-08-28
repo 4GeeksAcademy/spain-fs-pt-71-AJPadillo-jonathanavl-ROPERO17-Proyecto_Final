@@ -77,6 +77,7 @@ def add_review():
     new_review = Review(
         game_id=data['game_id'],
         username=data['username'],
+        title=data['title'],
         comment=data['comment'],
     )
     db.session.add(new_review)
@@ -97,6 +98,8 @@ def update_review(review_id):
     # Obtener los datos enviados en la solicitud
     data = request.json
     # Actualizar los campos de la reseña si están presentes en los datos
+    if 'title' in data:
+        review.comment = data['title']
     if 'comment' in data:
         review.comment = data['comment']
     # Guardar los cambios en la base de datos
