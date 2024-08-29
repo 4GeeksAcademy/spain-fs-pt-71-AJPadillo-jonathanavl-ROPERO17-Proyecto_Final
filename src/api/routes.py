@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Review
+from api.models import db, User, Review, Event
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
@@ -131,6 +131,42 @@ def get_users():
     users = User.query.all()
     all_users = list(map(lambda x: x.serialize(), users))
     return jsonify(all_users), 200
+
+@api.route('/events', methods=['GET'])
+def get_events():
+    events = Event.query.all()
+    return jsonify([event.serialize() for event in events])
+
+@api.route('/events', methods=['POST'])
+def add_event():
+    data = request.json
+    new_event = Event(
+        name=data['name'],
+        description=data['description'],
+        date=data['date']  # Asegúrate de que la fecha esté en un formato correcto, como ISO 8601
+    )
+    db.session.add(new_event)
+    db.session.commit()
+    return jsonify(new_event.serialize()), 201
+
+@api.route('/events/<int:event_id>', methods=['PUT'])
+def update_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    data = request.json
+    
+    event.name = data.get('name', event.name)
+    event.description = data.get('description', event.description)
+    event.date = data.get('date', event.date)  # Nuevamente, asegúrate de que la fecha esté en un formato correcto
+    
+    db.session.commit()
+    return jsonify(event.serialize()), 200
+
+@api.route('/events/<int:event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    db.session.delete(event)
+    db.session.commit()
+    return jsonify({"message": "Event deleted successfully"}), 200
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
