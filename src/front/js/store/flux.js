@@ -13,6 +13,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			reviews: [],// Almacena las reseñas
 			currentPage: 1, // Almacena la página actual para la paginación
 			totalPages: 1, // Almacena el número total de páginas disponibles
+			events:[],//Lista de eventos
 		},
 		actions: {
 			login: async (email, password) => {
@@ -307,9 +308,149 @@ const getState = ({ getStore, getActions, setStore }) => {
 				console.error("Error deleting review:", error);  // Muestra un error en caso de que la solicitud falle
 			}
 		},
+		fetchEvents: async () => {
+			try {
+				// Realiza una solicitud GET a la API para obtener la lista de eventos
+				const response = await fetch(process.env.BACKEND_URL + "/api/events");
+		
+				// Verifica si la respuesta fue exitosa
+				if (response.ok) {
+					// Convierte la respuesta a JSON
+					const data = await response.json();
+					// Actualiza el estado del store con los eventos obtenidos
+					setStore({ events: data });
+				} else {
+					// Muestra un mensaje de error si la solicitud falla
+					console.error("Error al obtener los eventos");
+				}
+			} catch (error) {
+				// Muestra un mensaje de error en caso de una excepción
+				console.error("Error en fetchEvents:", error);
+			}
+		},
+		
+		// Acción para crear un nuevo evento (solo admin)
+		createEvent: async (event) => {
+			try {
+				// Realiza una solicitud POST a la API para crear un nuevo evento
+				const response = await fetch(process.env.BACKEND_URL + "/api/events", {
+					method: "POST", // Especifica que el método HTTP es POST
+					headers: {
+						"Content-Type": "application/json" // Indica que el cuerpo de la solicitud está en formato JSON
+					},
+					body: JSON.stringify(event) // Convierte el objeto event a JSON para enviarlo en la solicitud
+				});
+		
+				// Verifica si la respuesta fue exitosa
+				if (response.ok) {
+					// Convierte la respuesta a JSON
+					const newEvent = await response.json();
+					// Obtiene el estado actual del store
+					const store = getStore();
+					// Actualiza el store con el nuevo evento agregado a la lista existente
+					setStore({ events: [...store.events, newEvent] });
+				} else {
+					// Muestra un mensaje de error si la solicitud falla
+					console.error("Error al crear el evento");
+				}
+			} catch (error) {
+				// Muestra un mensaje de error en caso de una excepción
+				console.error("Error en createEvent:", error);
+			}
+		},
+		
+		// Acción para actualizar un evento existente (solo admin)
+		updateEvent: async (eventId, updatedEvent) => {
+			try {
+				// Realiza una solicitud PUT a la API para actualizar un evento existente
+				const response = await fetch(`${process.env.BACKEND_URL}/api/events/${eventId}`, {
+					method: "PUT", // Especifica que el método HTTP es PUT
+					headers: {
+						"Content-Type": "application/json" // Indica que el cuerpo de la solicitud está en formato JSON
+					},
+					body: JSON.stringify(updatedEvent) // Convierte el objeto updatedEvent a JSON para enviarlo en la solicitud
+				});
+		
+				// Verifica si la respuesta fue exitosa
+				if (response.ok) {
+					// Convierte la respuesta a JSON
+					const updatedEvent = await response.json();
+					// Obtiene el estado actual del store
+					const store = getStore();
+					// Actualiza el store reemplazando el evento actualizado en la lista existente
+					const updatedEvents = store.events.map(event => event.id === eventId ? updatedEvent : event);
+					setStore({ events: updatedEvents });
+				} else {
+					// Muestra un mensaje de error si la solicitud falla
+					console.error("Error al actualizar el evento");
+				}
+			} catch (error) {
+				// Muestra un mensaje de error en caso de una excepción
+				console.error("Error en updateEvent:", error);
+			}
+		},
+		
+		// Acción para eliminar un evento existente (solo admin)
+		deleteEvent: async (eventId) => {
+			try {
+				// Realiza una solicitud DELETE a la API para eliminar un evento específico
+				const response = await fetch(`${process.env.BACKEND_URL}/api/events/${eventId}`, {
+					method: "DELETE" // Especifica que el método HTTP es DELETE
+				});
+		
+				// Verifica si la respuesta fue exitosa
+				if (response.ok) {
+					// Obtiene el estado actual del store
+					const store = getStore();
+					// Actualiza el store eliminando el evento de la lista existente
+					const updatedEvents = store.events.filter(event => event.id !== eventId);
+					setStore({ events: updatedEvents });
+				} else {
+					// Muestra un mensaje de error si la solicitud falla
+					console.error("Error al eliminar el evento");
+				}
+			} catch (error) {
+				// Muestra un mensaje de error en caso de una excepción
+				console.error("Error en deleteEvent:", error);
+			}
+		},
+		
+		// Acción para registrar la asistencia a un evento (disponible para todos los usuarios registrados)
+		attendEvent: async (eventId) => {
+			try {
+				// Obtiene el ID del usuario registrado desde localStorage
+				const userId = localStorage.getItem("userId");
+		
+				// Verifica si el usuario está registrado
+				if (!userId) {
+					console.error("Debes estar registrado para asistir a un evento.");
+					return;
+				}
+		
+				// Realiza una solicitud POST para registrar la asistencia al evento
+				const response = await fetch(`${process.env.BACKEND_URL}/api/events/${eventId}/attend`, {
+					method: "POST", // Especifica que el método HTTP es POST
+					headers: {
+						"Content-Type": "application/json" // Indica que el cuerpo de la solicitud está en formato JSON
+					},
+					body: JSON.stringify({ user_id: userId }) // Envía el ID del usuario en el cuerpo de la solicitud
+				});
+		
+				// Verifica si la respuesta fue exitosa
+				if (response.ok) {
+					console.log("Asistencia registrada correctamente");
+				} else {
+					// Muestra un mensaje de error si la solicitud falla
+					console.error("Error al registrar la asistencia");
+				}
+			} catch (error) {
+				// Muestra un mensaje de error en caso de una excepción
+				console.error("Error en attendEvent:", error);
+			}
+		},
 
-		/////////////////////////////////////////////////////////////////////////////////////////
-		// Acción para obtener un mensaje (ejemplo de backend)
+
+		/////////////////////////////////////////////////////////////////////////////////////////// Acción para obtener un mensaje (ejemplo de backend)
 		getMessage: async () => {
 			try {
 				// fetching data from the backend
