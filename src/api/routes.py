@@ -74,15 +74,19 @@ def get_reviews(game_id):
 @api.route('/reviews', methods=['POST'])
 def add_review():
     data = request.json
+    # Asegurarse de que se está enviando el user_id
+    if 'user_id' not in data:
+        return jsonify({"error": "user_id is required"}), 400
     new_review = Review(
         game_id=data['game_id'],
-        username=data['username'],
+        user_id=data['user_id'],  # Ahora usamos el user_id en lugar de username
         title=data['title'],
-        comment=data['comment'],
+        comment=data['comment']
     )
     db.session.add(new_review)
     db.session.commit()
     return jsonify(new_review.to_dict()), 201
+
 
 @api.route('/reviews/<int:review_id>', methods=['DELETE'])
 def delete_review(review_id):
