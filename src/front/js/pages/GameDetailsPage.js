@@ -1,7 +1,7 @@
 import React, { useEffect, useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Context } from "../store/appContext";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Button, Form, Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styles/details.css";
 
@@ -9,13 +9,23 @@ export const GameDetailsPage = () => {
     const { store, actions } = useContext(Context);
     const { gameId } = useParams();
     const [showFullDescription, setShowFullDescription] = useState(false);
+    const [newReview, setNewReview] = useState({ title: "", comment: "" });
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
-        actions.getGameById(gameId);
-        actions.fetchReviews(gameId);
+        const fetchData = async () => {
+            try {
+                await actions.getGameById(gameId);
+                await actions.getReviewsForGame(gameId);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+        fetchData();
     }, [gameId, actions]);
 
     const game = store.gameDetails;
+    const currentUser = store.currentUser; // Asumiendo que tienes el usuario actual en el estado
 
     const getMetacriticClass = (score) => {
         const decimalScore = score / 10;
@@ -32,6 +42,37 @@ export const GameDetailsPage = () => {
 
     const handleToggleDescription = () => {
         setShowFullDescription(prev => !prev);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewReview(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        try {
+            await actions.addReview({
+                game_id: game.id,
+                user_id: currentUser.id,  // ID del usuario actual
+                title: newReview.title,
+                comment: newReview.comment
+            });
+            setNewReview({ title: "", comment: "" });
+            setShowModal(false);
+        } catch (error) {
+            console.error("Error submitting review:", error);
+        }
+    };
+    
+    
+    const handleOpenModal = () => {
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setNewReview({ title: "", comment: "" });
+        setShowModal(false);
     };
 
     return (
@@ -75,21 +116,67 @@ export const GameDetailsPage = () => {
                         </Col>
                     </Row>
                     <hr className="separator" />
-                    <Row>
+                    <Row className="align-items-center">
                         <Col>
                             <h3 className="game-subtitle">User Reviews</h3>
+                        </Col>
+                        <Col className="text-end">
+                            {store.isLoggedIn && (
+                                <Button variant="primary" onClick={handleOpenModal}>
+                                    Add Review
+                                </Button>
+                            )}
+                        </Col>
+                    </Row>
+                    <Row>
+                        {/* <Col>
                             {store.reviews.length > 0 ? (
                                 store.reviews.map((review, index) => (
                                     <div key={index} className="review-card">
-                                        <p><strong>{review.user_name}</strong> - {new Date(review.date).toLocaleDateString()}</p>
-                                        <p>{review.content}</p>
+                                        <p><strong>{review.username}</strong> - {new Date(review.date).toLocaleDateString()}</p>
+                                        <p>{review.comment}</p>
                                     </div>
                                 ))
                             ) : (
                                 <p>No reviews available.</p>
                             )}
-                        </Col>
+                        </Col> */}
                     </Row>
+
+                    {/* Modal para añadir reseñas */}
+                    <Modal show={showModal} onHide={handleCloseModal}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Add Review</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <Form onSubmit={handleSubmitReview}>
+                                <Form.Group controlId="formReviewTitle">
+                                    <Form.Label>Title</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Enter review title"
+                                        name="title"
+                                        value={newReview.title}
+                                        onChange={handleInputChange}
+                                    />
+                                </Form.Group>
+                                <Form.Group controlId="formReviewComment">
+                                    <Form.Label>Comment</Form.Label>
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={3}
+                                        placeholder="Enter review comment"
+                                        name="comment"
+                                        value={newReview.comment}
+                                        onChange={handleInputChange}
+                                    />
+                                </Form.Group>
+                                <Button variant="primary" type="submit">
+                                    Submit Review
+                                </Button>
+                            </Form>
+                        </Modal.Body>
+                    </Modal>
                 </>
             ) : (
                 <p>Loading game details...</p>

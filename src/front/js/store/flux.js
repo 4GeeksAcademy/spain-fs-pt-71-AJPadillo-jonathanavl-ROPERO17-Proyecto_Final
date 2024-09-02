@@ -180,19 +180,18 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			addReview: async (review) => {
 				try {
-					// Asegúrate de que el objeto review contiene los campos correctos
+					// Asegúrate de que el objeto review contiene todos los campos necesarios
 					const response = await axios.post(`${process.env.BACKEND_URL}/api/reviews`, {
 						game_id: review.game_id,  // ID del juego de la API RAWG
 						user_id: review.user_id,  // ID del usuario autenticado
 						title: review.title,      // Título de la reseña
 						comment: review.comment   // Comentario de la reseña
 					},
-						{
-							headers: {
-								"Content-Type": "application/json",
-							},
-						}
-					);
+					{
+						headers: {
+							"Content-Type": "application/json",
+						},
+					});
 					if (response.status === 201) {
 						// Si la reseña se ha añadido correctamente, recarga las reseñas
 						getActions().fetchReviews(getStore().currentPage);
@@ -200,7 +199,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 						console.error("Error al agregar la reseña");
 					}
 				} catch (error) {
-					console.error("Error en addReview:", error);
+					console.error("Error en addReview:", error.response?.data || error.message);
 				}
 			},
 
