@@ -87,6 +87,7 @@ def add_review():
     db.session.commit()
     return jsonify(new_review.to_dict()), 201
 
+
 @api.route('/reviews/<int:review_id>', methods=['DELETE'])
 def delete_review(review_id):
     review = Review.query.get_or_404(review_id)

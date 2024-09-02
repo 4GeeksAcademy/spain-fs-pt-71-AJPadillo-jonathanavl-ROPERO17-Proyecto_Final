@@ -202,8 +202,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error en addReview:", error.response?.data || error.message);
 				}
 			},
-			
-			
 
 			changePage: (page) => {
 				const { fetchReviews } = getActions();
@@ -246,8 +244,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error("Error deleting review:", error);
 				}
-			}
-			,
+			},
 
 			getMessage: async () => {
 				try {
@@ -261,5 +258,4 @@ const getState = ({ getStore, getActions, setStore }) => {
 		}
 	};
 };
-
 export default getState;
