@@ -129,18 +129,18 @@ export const GameDetailsPage = () => {
                         </Col>
                     </Row>
                     <Row>
-                        <Col>
+                        {/* <Col>
                             {store.reviews.length > 0 ? (
                                 store.reviews.map((review, index) => (
                                     <div key={index} className="review-card">
-                                        <p><strong>{review.user_name}</strong> - {new Date(review.date).toLocaleDateString()}</p>
+                                        <p><strong>{review.username}</strong> - {new Date(review.date).toLocaleDateString()}</p>
                                         <p>{review.comment}</p>
                                     </div>
                                 ))
                             ) : (
                                 <p>No reviews available.</p>
                             )}
-                        </Col>
+                        </Col> */}
                     </Row>
 
                     {/* Modal para añadir reseñas */}
