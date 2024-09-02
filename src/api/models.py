@@ -31,7 +31,7 @@ class User(db.Model):
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     game_id = db.Column(db.Integer, nullable=False)  # Este es el ID del juego desde la API RAWG
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Relación con el usuario que escribió la reseña
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=True)  # Relación con el usuario que escribió la reseña
     title = db.Column(db.String(50), nullable=False)
     comment = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
