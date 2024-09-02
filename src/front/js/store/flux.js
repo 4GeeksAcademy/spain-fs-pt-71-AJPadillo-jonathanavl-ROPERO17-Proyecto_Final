@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
@@ -8,36 +10,28 @@ const getState = ({ getStore, getActions, setStore }) => {
 			users: [],
 			games: [],
 			genres: [],
-			gameDetails: null,// Aqui almacenamos los detalles del juego selecionado
+			gameDetails: null, // Aquí almacenamos los detalles del juego seleccionado
 			searchResults: [],
-			reviews: [],// Almacena las reseñas
+			reviews: [], // Almacena las reseñas
 			currentPage: 1, // Almacena la página actual para la paginación
 			totalPages: 1, // Almacena el número total de páginas disponibles
 		},
 		actions: {
 			login: async (email, password) => {
 				try {
-					const response = await fetch(process.env.BACKEND_URL + "/api/login", {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json"
-						},
-						body: JSON.stringify({ email, password }) // Envía el email y el password como un objeto JSON en el cuerpo de la solicitud
-					});
-					if (response.status === 200) { // Verifica si la respuesta de la API fue exitosa (código 200)
-						const data = await response.json(); // Convierte la respuesta en formato JSON
-						const accessToken = data.access_token;
-						if (accessToken) {
-							localStorage.setItem("accessToken", accessToken); // Guarda el token recibido en el localStorage del navegador
-							await getActions().getCurrentUser(); // Obtiene la información del usuario actual
-							console.log("Login successful"); // Mensaje de éxito en la consola
-							console.log("Token:", data.access_token); // Muestra el token en la consola
-							return true;
-						}
-						return false;
+					const response = await axios.post(`${process.env.BACKEND_URL}/api/login`, { email, password });
+					const { access_token } = response.data;
+					if (access_token) {
+						localStorage.setItem("accessToken", access_token);
+						await getActions().getCurrentUser();
+						console.log("Login successful");
+						console.log("Token:", access_token);
+						return true;
 					}
+					return false;
 				} catch (error) {
-					console.error("Error al logear (flux.js):", error); // Captura y muestra cualquier error que ocurra durante el proceso
+					console.error("Error al logear (flux.js):", error.response?.data?.message || error.message);
+					return false;
 				}
 			},
 
@@ -51,24 +45,11 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			createUser: async (email, password) => {
 				try {
-					const response = await fetch(process.env.BACKEND_URL + "/api/signup", {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({ email, password }),
-					});
-					if (response.status === 200) {
-						const data = await response.json();
-						console.log("Usuario creado:", data);
-						return true;
-					} else {
-						const errorData = await response.json();
-						console.error("Error al crear usuario:", errorData.message);
-						return false;
-					}
+					const response = await axios.post(`${process.env.BACKEND_URL}/api/signup`, { email, password });
+					console.log("Usuario creado:", response.data);
+					return true;
 				} catch (error) {
-					console.error("Error al crear usuario:", error);
+					console.error("Error al crear usuario:", error.response?.data?.message || error.message);
 					return false;
 				}
 			},
@@ -76,22 +57,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 			getCurrentUser: async () => {
 				try {
 					const accessToken = localStorage.getItem("accessToken");
-					const response = await fetch(process.env.BACKEND_URL + "/api/current-user", {
-						method: "GET",
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/current-user`, {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
-							"Content-Type": "application/json"
 						}
 					});
-					if (response.status === 200) {
-						const data = await response.json();
-						const currentUser = data.current_user;
-						setStore({ currentUser, isLoggedIn: true });
-					} else {
-						throw new Error("Failed to fetch current user");
-					}
+					setStore({ currentUser: response.data.current_user, isLoggedIn: true });
 				} catch (error) {
-					console.log("Error loading message from backend", error);
+					console.error("Error loading current user from backend:", error.response?.data?.message || error.message);
 					localStorage.removeItem("accessToken");
 					setStore({
 						currentUser: null,
@@ -102,60 +75,47 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			searchGames: async (query) => {
 				try {
-					const response = await fetch(process.env.API_RAWG_GET_URL + `/games?key=` + process.env.API_RAWG_KEY + `&search=${query}` //PENDIENTE SABER MODIFICACION ARCHIVO ENV
-					);
-					const data = await response.json();
-					// Formatear los resultados para que solo incluyan el ID y el nombre del juego
-					const formattedResults = data.results.map((game) => ({
+					const response = await axios.get(`${process.env.API_RAWG_GET_URL}/games`, {
+						params: {
+							key: process.env.API_RAWG_KEY,
+							search: query
+						}
+					});
+					const formattedResults = response.data.results.map((game) => ({
 						id: game.id,
 						name: game.name
 					}));
-					// Actualizar el store con los resultados de búsqueda
 					setStore({ searchResults: formattedResults });
 				} catch (error) {
-					console.error("Error fetching games:", error);
+					console.error("Error fetching games:", error.response?.data?.message || error.message);
 				}
 			},
 
 			updateProfileImage: async (newImage) => {
 				try {
 					const accessToken = localStorage.getItem("accessToken");
-					const response = await fetch(process.env.BACKEND_URL + "/api/update-avatar", {
-						method: "PUT",
+					const response = await axios.put(`${process.env.BACKEND_URL}/api/update-avatar`, { avatar: newImage }, {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
-							"Content-Type": "application/json"
-						},
-						body: JSON.stringify({ avatar: newImage })
+						}
 					});
-
-					if (response.status === 200) {
-						const updatedUser = await response.json();
-						setStore({ currentUser: updatedUser });
-						console.log("Imagen de perfil actualizada con éxito");
-					} else {
-						console.error("Error al actualizar la imagen de perfil");
-					}
+					setStore({ currentUser: response.data });
+					console.log("Imagen de perfil actualizada con éxito");
 				} catch (error) {
-					console.error("Error al actualizar la imagen de perfil:", error);
+					console.error("Error al actualizar la imagen de perfil:", error.response?.data?.message || error.message);
 				}
 			},
 
-			//Accion para obtener Juegos
 			getGames: async () => {
 				try {
-					const response = await fetch(process.env.API_RAWG_GET_URL + `/games?key=` + process.env.API_RAWG_KEY)
-					if (response.ok) {
-						const data = await response.json();
-						setStore({ games: data.results })//Actualizamos el store con los juegos
-
-					}
-					else {
-						console.error("Error fetching games:", response.statusText);
-					}
-				}
-				catch (error) {
-					console.error("Error fetching games:", error)
+					const response = await axios.get(`${process.env.API_RAWG_GET_URL}/games`, {
+						params: {
+							key: process.env.API_RAWG_KEY
+						}
+					});
+					setStore({ games: response.data.results });
+				} catch (error) {
+					console.error("Error fetching games:", error.response?.data?.message || error.message);
 				}
 			},
 
@@ -163,80 +123,77 @@ const getState = ({ getStore, getActions, setStore }) => {
 				try {
 					const store = getStore();
 					const currentLength = store.games.length;
-					const response = await fetch(process.env.API_RAWG_GET_URL + `/games?key=` + process.env.API_RAWG_KEY + `&page=${Math.floor(currentLength / 20) + 1}`);
-
-					if (response.ok) {
-						const data = await response.json();
-						setStore({ games: [...store.games, ...data.results] }); // Añadir nuevos juegos a los ya existentes
-					} else {
-						console.error("Error fetching more games:", response.statusText);
-					}
+					const response = await axios.get(`${process.env.API_RAWG_GET_URL}/games`, {
+						params: {
+							key: process.env.API_RAWG_KEY,
+							page: Math.floor(currentLength / 20) + 1
+						}
+					});
+					setStore({ games: [...store.games, ...response.data.results] });
 				} catch (error) {
-					console.error("Error fetching more games:", error);
+					console.error("Error fetching more games:", error.response?.data?.message || error.message);
 				}
 			},
 
-			//Accion para obtener generos
 			getGenres: async () => {
 				try {
-					const response = await fetch(process.env.API_RAWG_GET_URL + "/genres?key=" + process.env.API_RAWG_KEY)
-					if (response.ok) {
-						const data = await response.json();
-						setStore({ genres: data.results });//Actualizamos el store con los generos
-					}
-					else {
-						console.error("Error fetching genres:", response.statusText);
-					}
+					const response = await axios.get(`${process.env.API_RAWG_GET_URL}/genres`, {
+						params: {
+							key: process.env.API_RAWG_KEY
+						}
+					});
+					setStore({ genres: response.data.results });
 				} catch (error) {
-					console.error("Error fetching genres:", error);
+					console.error("Error fetching genres:", error.response?.data?.message || error.message);
 				}
 			},
 
-			//Accion para obtener juegos por id
 			getGameById: async (gameId) => {
 				try {
-					const response = await fetch(process.env.API_RAWG_GET_URL + `/games/${gameId}?key=` + process.env.API_RAWG_KEY)
-					if (response.ok) {
-						const data = await response.json();
-						setStore({ gameDetails: data }); // Actualizamos el store con los detalles del juego
-					}
-					else {
-						console.error("Error fetching game by ID:", response.statusText);
-					}
+					const response = await axios.get(`${process.env.API_RAWG_GET_URL}/games/${gameId}`, {
+						params: {
+							key: process.env.API_RAWG_KEY
+						}
+					});
+					setStore({ gameDetails: response.data });
 				} catch (error) {
-					console.error("Error fetching game by ID:", error);
-				}
-			},
-			// Acción para obtener las reseñas 
-			fetchReviews: async (page = 1) => {
-				try {
-					const response = await fetch(`${process.env.BACKEND_URL}/api/reviews?page=${page}`);
-					if (response.ok) {
-						const data = await response.json();
-						setStore({
-							reviews: data.reviews,
-							currentPage: data.page,
-							totalPages: data.total_pages,
-						});
-					} else {
-						console.error("Error al cargar las reseñas");
-					}
-				} catch (error) {
-					console.error("Error en fetchReviews:", error);
+					console.error("Error fetching game by ID:", error.response?.data?.message || error.message);
 				}
 			},
 
-			// Acción para agregar una nueva reseña
+			fetchReviews: async (page = 1) => {
+				try {
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/reviews`, {
+						params: {
+							page
+						}
+					});
+					setStore({
+						reviews: response.data.reviews,
+						currentPage: response.data.page,
+						totalPages: response.data.total_pages,
+					});
+				} catch (error) {
+					console.error("Error fetching reviews:", error.response?.data?.message || error.message);
+				}
+			},
+
 			addReview: async (review) => {
 				try {
-					const response = await fetch(`${process.env.BACKEND_URL}/api/reviews`, {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify(review),
-					});
-					if (response.ok) {
+					// Asegúrate de que el objeto review contiene los campos correctos
+					const response = await axios.post(`${process.env.BACKEND_URL}/api/reviews`, {
+						game_id: review.game_id,  // ID del juego de la API RAWG
+						user_id: review.user_id,  // ID del usuario autenticado
+						title: review.title,      // Título de la reseña
+						comment: review.comment   // Comentario de la reseña
+					},
+						{
+							headers: {
+								"Content-Type": "application/json",
+							},
+						}
+					);
+					if (response.status === 201) {
 						// Si la reseña se ha añadido correctamente, recarga las reseñas
 						getActions().fetchReviews(getStore().currentPage);
 					} else {
@@ -247,84 +204,59 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			// Acción para cambiar de página en la paginación
 			changePage: (page) => {
 				const { fetchReviews } = getActions();
-				fetchReviews(page); // Llama a fetchReviews con la nueva página
+				fetchReviews(page);
 			},
-		},
-		// Acción para obtener todas las reseñas de un juego específico
-		getReviewsForGame: async (gameId) => {
-			try {
-				// Realiza una solicitud GET al backend para obtener las reseñas de un juego específico
-				const response = await fetch(`${process.env.BACKEND_URL}/reviews?game_id=${gameId}`);
-				const data = await response.json();  // Convierte la respuesta en JSON
-				setStore({ reviews: data });  // Almacena las reseñas en el store
-			} catch (error) {
-				console.error("Error fetching reviews:", error);  // Muestra un error en caso de que la solicitud falle
-			}
-		},
 
-		// Acción para actualizar una reseña existente
-		updateReview: async (reviewId, updatedComment) => {
-			try {
-				// Realiza una solicitud PUT al backend para actualizar una reseña específica
-				const response = await fetch(`${process.env.BACKEND_URL}/reviews/${reviewId}`, {
-					method: "PUT",  // Método HTTP para actualizar recursos
-					headers: {
-						"Content-Type": "application/json"  // Especifica que el cuerpo de la solicitud es JSON
-					},
-					body: JSON.stringify({ comment: updatedComment })  // Envía el comentario actualizado en el cuerpo de la solicitud
-				});
-				if (response.ok) {  // Verifica si la respuesta es exitosa (código 200-299)
-					const updatedReview = await response.json();  // Convierte la respuesta en JSON
-					const store = getStore();  // Obtiene el estado actual del store
-					// Actualiza la reseña en el estado del store
-					const updatedReviews = store.reviews.map(review =>
-						review.id === reviewId ? updatedReview : review
-					);
-					setStore({ reviews: updatedReviews });  // Guarda las reseñas actualizadas en el store
+			getReviewsForGame: async (gameId) => {
+				try {
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/reviews/${gameId}`);
+					setStore({ reviews: response.data });
+				} catch (error) {
+					console.error("Error fetching reviews:", error);
 				}
-			} catch (error) {
-				console.error("Error updating review:", error);  // Muestra un error en caso de que la solicitud falle
-			}
-		},
+			},
 
-		// Acción para borrar una reseña existente
-		deleteReview: async (reviewId) => {
-			try {
-				// Realiza una solicitud DELETE al backend para borrar una reseña específica
-				const response = await fetch(`${process.env.BACKEND_URL}/reviews/${reviewId}`, {
-					method: "DELETE"  // Método HTTP para borrar recursos
-				});
-				if (response.ok) {  // Verifica si la respuesta es exitosa
-					const store = getStore();  // Obtiene el estado actual del store
-					// Filtra la reseña eliminada fuera del estado del store
-					const updatedReviews = store.reviews.filter(review => review.id !== reviewId);
-					setStore({ reviews: updatedReviews });  // Guarda las reseñas actualizadas en el store
+			updateReview: async (reviewId, updatedComment) => {
+				try {
+					const response = await axios.put(`${process.env.BACKEND_URL}/api/reviews/${reviewId}`, { comment: updatedComment });
+					if (response.status === 200) {
+						const updatedReview = response.data;
+						const store = getStore();
+						const updatedReviews = store.reviews.map(review =>
+							review.id === reviewId ? updatedReview : review
+						);
+						setStore({ reviews: updatedReviews });
+					}
+				} catch (error) {
+					console.error("Error updating review:", error);
 				}
-			} catch (error) {
-				console.error("Error deleting review:", error);  // Muestra un error en caso de que la solicitud falle
-			}
-		},
+			},
 
-		/////////////////////////////////////////////////////////////////////////////////////////
-		// Acción para obtener un mensaje (ejemplo de backend)
-		getMessage: async () => {
-			try {
-				// fetching data from the backend
-				const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
-				const data = await resp.json()
-				setStore({ message: data.message })
-				// don't forget to return something, that is how the async resolves
-				return data;
-			} catch (error) {
-				console.log("Error loading message from backend", error)
-			}
-		},
+			deleteReview: async (reviewId) => {
+				try {
+					const response = await axios.delete(`${process.env.BACKEND_URL}/api/reviews/${reviewId}`);
+					if (response.status === 200) {
+						const store = getStore();
+						const updatedReviews = store.reviews.filter(review => review.id !== reviewId);
+						setStore({ reviews: updatedReviews });
+					}
+				} catch (error) {
+					console.error("Error deleting review:", error);
+				}
+			},
 
+			getMessage: async () => {
+				try {
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/hello`);
+					setStore({ message: response.data.message });
+					return response.data;
+				} catch (error) {
+					console.error("Error loading message from backend:", error.response?.data?.message || error.message);
+				}
+			},
+		}
 	};
-
 };
-
 export default getState;
