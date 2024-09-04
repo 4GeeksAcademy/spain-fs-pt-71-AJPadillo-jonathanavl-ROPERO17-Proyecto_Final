@@ -54,7 +54,6 @@ export const GameDetailsPage = () => {
     try {
       await actions.addReview({
         game_id: game.id,
-        user_id: currentUser.id, // ID del usuario actual
         title: newReview.title,
         comment: newReview.comment,
       });
@@ -150,8 +149,7 @@ export const GameDetailsPage = () => {
                 store.reviews.map((review, index) => (
                   <div key={index} className="review-card">
                     <p>
-                      <strong>{review.username}</strong> -{" "}
-                      {new Date(review.date).toLocaleDateString()}
+                      <strong>{review.username}</strong> | {review.title} - {new Date(review.created_at).toLocaleDateString()}
                     </p>
                     <p>{review.comment}</p>
                   </div>

@@ -5,7 +5,7 @@ import './ProfilePage.css';
 
 export const ProfilePage = () => {
     const { store, actions } = useContext(Context);
-    const { currentUser, isLoggedIn } = store;
+    const { currentUser, isLoggedIn, isLoadingUser } = store;
     const [showModal, setShowModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(currentUser?.profile_image);
 
@@ -24,8 +24,6 @@ export const ProfilePage = () => {
     };
 
     useEffect(() => {
-        let isMounted = true;
-
         const fetchUserData = async () => {
             if (!isLoggedIn) {
                 window.location.href = '/login';
@@ -36,12 +34,10 @@ export const ProfilePage = () => {
                         setSelectedImage(storedImage); // Usar la imagen almacenada en localStorage si existe
                     } else {
                         const user = await actions.getCurrentUser();
-                        if (isMounted) {
-                            if (user && user.profile_image) {
-                                setSelectedImage(user.profile_image);
-                            } else {
-                                setSelectedImage('https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
-                            }
+                        if (user && user.profile_image) {
+                            setSelectedImage(user.profile_image);
+                        } else {
+                            setSelectedImage('https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
                         }
                     }
                 } catch (error) {
@@ -49,13 +45,10 @@ export const ProfilePage = () => {
                 }
             }
         };
-
-        fetchUserData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [isLoggedIn, actions]);
+        if (!isLoadingUser) {
+            fetchUserData();
+        }
+    }, [isLoadingUser]);
 
     const events = [
         'Gran torneo de Fortnite 2024',
@@ -78,8 +71,11 @@ export const ProfilePage = () => {
         { game: 'Fortnite', rating: 4 }
     ];
 
-    const preferences = currentUser.preferred_genres ? currentUser.preferred_genres.split(',') : [];
+    if (!currentUser) {
+        return null
+    }
 
+    const preferences = currentUser?.preferred_genres ? currentUser.preferred_genres.split(',') : [];
     return (
         <Container className="profile-container">
             <Row className="profile-row">
@@ -95,8 +91,8 @@ export const ProfilePage = () => {
                             <div className="my-profile-status">
                                 <h3 className="my-profile">My Profile</h3>
                                 <Button variant="primary" className="circle-button" onClick={() => setShowModal(true)}>
-                                <img src="https://www.svgrepo.com/show/345041/pencil-square.svg" alt="Edit" className="pencil-icon" />
-                            </Button>                            </div>
+                                    <img src="https://www.svgrepo.com/show/345041/pencil-square.svg" alt="Edit" className="pencil-icon" />
+                                </Button>                            </div>
                             <div className="user-info">
                                 <div className="user-name-more-data">
                                     <p className="user-name">@{currentUser.username || 'TheGhostGamer'}</p>

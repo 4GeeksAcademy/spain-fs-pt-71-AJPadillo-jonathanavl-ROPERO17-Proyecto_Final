@@ -21,13 +21,18 @@ const injectContext = PassedComponent => {
 			})
 		);
 
-		useEffect(() => {
+		async function initializeUser() {
+			await state.actions.getCurrentUser();
 			if (state.actions.getMessage) {
-                state.actions.getMessage();
-            } else {
-                console.error("getMessage is not a function in state.actions");
-            }
-        }, []);
+				state.actions.getMessage();
+			} else {
+				console.error("getMessage is not a function in state.actions");
+			}
+		}
+
+		useEffect(() => {
+			initializeUser()
+		}, []);
 
 		// The initial value for the context is not null anymore, but the current state of this component,
 		// the context will now have a getStore, getActions and setStore functions available, because they were declared
