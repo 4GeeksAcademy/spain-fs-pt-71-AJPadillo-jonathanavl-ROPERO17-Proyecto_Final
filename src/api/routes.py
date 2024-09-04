@@ -71,6 +71,7 @@ def get_reviews(game_id):
     reviews = Review.query.filter_by(game_id=game_id).all()
     return jsonify([review.to_dict() for review in reviews])
 
+
 @api.route('/reviews', methods=['POST'])
 def add_review():
     data = request.json
@@ -103,7 +104,7 @@ def update_review(review_id):
     data = request.json
     # Actualizar los campos de la reseña si están presentes en los datos
     if 'title' in data:
-        review.comment = data['title']
+        review.title = data['title']
     if 'comment' in data:
         review.comment = data['comment']
     # Guardar los cambios en la base de datos

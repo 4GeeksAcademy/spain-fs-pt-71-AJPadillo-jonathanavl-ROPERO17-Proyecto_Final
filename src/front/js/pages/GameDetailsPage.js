@@ -22,7 +22,7 @@ export const GameDetailsPage = () => {
             }
         };
         fetchData();
-    }, [gameId, actions]);
+    }, [gameId]);
 
     const game = store.gameDetails;
     const currentUser = store.currentUser; // Asumiendo que tienes el usuario actual en el estado
@@ -129,7 +129,7 @@ export const GameDetailsPage = () => {
                         </Col>
                     </Row>
                     <Row>
-                        {/* <Col>
+                        <Col>
                             {store.reviews.length > 0 ? (
                                 store.reviews.map((review, index) => (
                                     <div key={index} className="review-card">
@@ -140,7 +140,7 @@ export const GameDetailsPage = () => {
                             ) : (
                                 <p>No reviews available.</p>
                             )}
-                        </Col> */}
+                        </Col>
                     </Row>
 
                     {/* Modal para añadir reseñas */}

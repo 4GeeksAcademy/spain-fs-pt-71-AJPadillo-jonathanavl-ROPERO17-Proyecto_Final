@@ -161,17 +161,17 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			fetchReviews: async (page = 1) => {
+			fetchReviews: async (game_id, page = 1) => {
 				try {
-					const response = await axios.get(`${process.env.BACKEND_URL}/api/reviews`, {
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/reviews/${game_id}`, {
 						params: {
-							page
+							page 
 						}
 					});
 					setStore({
-						reviews: response.data.reviews,
-						currentPage: response.data.page,
-						totalPages: response.data.total_pages,
+						reviews: response.data.reviews || response.data,  
+						currentPage: response.data.page || page,
+						totalPages: response.data.total_pages || 1,
 					});
 				} catch (error) {
 					console.error("Error fetching reviews:", error.response?.data?.message || error.message);
