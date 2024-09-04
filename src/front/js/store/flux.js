@@ -6,6 +6,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			message: "",
 			token: "",
 			currentUser: null,
+			isLoadingUser: true,
 			isLoggedIn: false,
 			users: [],
 			games: [],
@@ -43,9 +44,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 				});
 			},
 
-			createUser: async (email, password) => {
+			createUser: async (username, email, password) => {
 				try {
-					const response = await axios.post(`${process.env.BACKEND_URL}/api/signup`, { email, password });
+					const response = await axios.post(`${process.env.BACKEND_URL}/api/signup`, { username, email, password });
 					console.log("Usuario creado:", response.data);
 					return true;
 				} catch (error) {
@@ -62,13 +63,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 							Authorization: `Bearer ${accessToken}`,
 						}
 					});
-					setStore({ currentUser: response.data.current_user, isLoggedIn: true });
+					setStore({ currentUser: response.data.current_user, isLoggedIn: true, isLoadingUser: false });
 				} catch (error) {
 					console.error("Error loading current user from backend:", error.response?.data?.message || error.message);
 					localStorage.removeItem("accessToken");
 					setStore({
 						currentUser: null,
 						isLoggedIn: false,
+						isLoadingUser: false,
 					});
 				}
 			},
@@ -180,21 +182,19 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			addReview: async (review) => {
 				try {
+					const accessToken = localStorage.getItem("accessToken");
 					// Asegúrate de que el objeto review contiene todos los campos necesarios
-					const response = await axios.post(`${process.env.BACKEND_URL}/api/reviews`, {
-						game_id: review.game_id,  // ID del juego de la API RAWG
-						user_id: review.user_id,  // ID del usuario autenticado
+					const response = await axios.post(`${process.env.BACKEND_URL}/api/reviews/${review.game_id}`, {
 						title: review.title,      // Título de la reseña
 						comment: review.comment   // Comentario de la reseña
-					},
-					{
+					}, {
 						headers: {
+							Authorization: `Bearer ${accessToken}`,
 							"Content-Type": "application/json",
 						},
 					});
 					if (response.status === 201) {
-						// Si la reseña se ha añadido correctamente, recarga las reseñas
-						getActions().fetchReviews(getStore().currentPage);
+						getActions().getReviewsForGame(review.game_id);
 					} else {
 						console.error("Error al agregar la reseña");
 					}
@@ -245,112 +245,112 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error deleting review:", error);
 				}
 			},
-      
-      // Acción para crear un nuevo evento
-      createEvent: async (event) => {
-                try {
-                    // Obtiene el token de acceso almacenado en localStorage
-                    const accessToken = localStorage.getItem("accessToken");
 
-                    // Realiza una solicitud POST a la API para crear un nuevo evento
-                    const response = await axios.post(
-                        process.env.BACKEND_URL + "/api/events",
-                        event,
-                        {
-                            headers: {
-                                "Authorization": `Bearer ${accessToken}`, // Añade el token de autenticación en la cabecera
-                                "Content-Type": "application/json" // Especifica que el cuerpo de la solicitud es JSON
-                            }
-                        }
-                    );
-                    // Si la respuesta es exitosa, agrega el nuevo evento al store
-                    const store = getStore();
-                    setStore({ events: [...store.events, response.data] });
-                } catch (error) {
-                    // Si ocurre un error durante la solicitud, lo registra en la consola
-                    console.error("Error en createEvent:", error);
-                }
-            },
+			// Acción para crear un nuevo evento
+			createEvent: async (event) => {
+				try {
+					// Obtiene el token de acceso almacenado en localStorage
+					const accessToken = localStorage.getItem("accessToken");
 
-            // Acción para actualizar un evento existente
-            updateEvent: async (eventId, updatedEvent) => {
-                try {
-                    // Obtiene el token de acceso almacenado en localStorage
-                    const accessToken = localStorage.getItem("accessToken");
+					// Realiza una solicitud POST a la API para crear un nuevo evento
+					const response = await axios.post(
+						process.env.BACKEND_URL + "/api/events",
+						event,
+						{
+							headers: {
+								"Authorization": `Bearer ${accessToken}`, // Añade el token de autenticación en la cabecera
+								"Content-Type": "application/json" // Especifica que el cuerpo de la solicitud es JSON
+							}
+						}
+					);
+					// Si la respuesta es exitosa, agrega el nuevo evento al store
+					const store = getStore();
+					setStore({ events: [...store.events, response.data] });
+				} catch (error) {
+					// Si ocurre un error durante la solicitud, lo registra en la consola
+					console.error("Error en createEvent:", error);
+				}
+			},
 
-                    // Realiza una solicitud PUT a la API para actualizar un evento específico
-                    const response = await axios.put(
-                        `${process.env.BACKEND_URL}/api/events/${eventId}`,
-                        updatedEvent,
-                        {
-                            headers: {
-                                "Authorization": `Bearer ${accessToken}`, // Añade el token de autenticación en la cabecera
-                                "Content-Type": "application/json" // Especifica que el cuerpo de la solicitud es JSON
-                            }
-                        }
-                    );
-                    // Si la respuesta es exitosa, actualiza el evento en el store
-                    const store = getStore();
-                    const updatedEvents = store.events.map(event => event.id === eventId ? response.data : event);
-                    setStore({ events: updatedEvents });
-                } catch (error) {
-                    // Si ocurre un error durante la solicitud, lo registra en la consola
-                    console.error("Error en updateEvent:", error);
-                }
-            },
+			// Acción para actualizar un evento existente
+			updateEvent: async (eventId, updatedEvent) => {
+				try {
+					// Obtiene el token de acceso almacenado en localStorage
+					const accessToken = localStorage.getItem("accessToken");
 
-            // Acción para eliminar un evento existente
-            deleteEvent: async (eventId) => {
-                try {
-                    // Obtiene el token de acceso almacenado en localStorage
-                    const accessToken = localStorage.getItem("accessToken");
+					// Realiza una solicitud PUT a la API para actualizar un evento específico
+					const response = await axios.put(
+						`${process.env.BACKEND_URL}/api/events/${eventId}`,
+						updatedEvent,
+						{
+							headers: {
+								"Authorization": `Bearer ${accessToken}`, // Añade el token de autenticación en la cabecera
+								"Content-Type": "application/json" // Especifica que el cuerpo de la solicitud es JSON
+							}
+						}
+					);
+					// Si la respuesta es exitosa, actualiza el evento en el store
+					const store = getStore();
+					const updatedEvents = store.events.map(event => event.id === eventId ? response.data : event);
+					setStore({ events: updatedEvents });
+				} catch (error) {
+					// Si ocurre un error durante la solicitud, lo registra en la consola
+					console.error("Error en updateEvent:", error);
+				}
+			},
 
-                    // Realiza una solicitud DELETE a la API para eliminar un evento específico
-                    await axios.delete(`${process.env.BACKEND_URL}/api/events/${eventId}`, {
-                        headers: {
-                            "Authorization": `Bearer ${accessToken}` // Añade el token de autenticación en la cabecera
-                        }
-                    });
-                    // Si la respuesta es exitosa, elimina el evento del store
-                    const store = getStore();
-                    const updatedEvents = store.events.filter(event => event.id !== eventId);
-                    setStore({ events: updatedEvents });
-                } catch (error) {
-                    // Si ocurre un error durante la solicitud, lo registra en la consola
-                    console.error("Error en deleteEvent:", error);
-                }
-            },
+			// Acción para eliminar un evento existente
+			deleteEvent: async (eventId) => {
+				try {
+					// Obtiene el token de acceso almacenado en localStorage
+					const accessToken = localStorage.getItem("accessToken");
 
-            // Acción para registrar la asistencia a un evento
-            attendEvent: async (eventId) => {
-                try {
-                    // Obtiene el token de acceso almacenado en localStorage
-                    const accessToken = localStorage.getItem("accessToken");
+					// Realiza una solicitud DELETE a la API para eliminar un evento específico
+					await axios.delete(`${process.env.BACKEND_URL}/api/events/${eventId}`, {
+						headers: {
+							"Authorization": `Bearer ${accessToken}` // Añade el token de autenticación en la cabecera
+						}
+					});
+					// Si la respuesta es exitosa, elimina el evento del store
+					const store = getStore();
+					const updatedEvents = store.events.filter(event => event.id !== eventId);
+					setStore({ events: updatedEvents });
+				} catch (error) {
+					// Si ocurre un error durante la solicitud, lo registra en la consola
+					console.error("Error en deleteEvent:", error);
+				}
+			},
 
-                    // Verifica si el usuario está autenticado
-                    if (!accessToken) {
-                        console.error("Debes estar registrado para asistir a un evento.");
-                        // Redirige a la página de inicio de sesión
-                        window.location.href = "/login";
-                        return;
-                    }
+			// Acción para registrar la asistencia a un evento
+			attendEvent: async (eventId) => {
+				try {
+					// Obtiene el token de acceso almacenado en localStorage
+					const accessToken = localStorage.getItem("accessToken");
 
-                    // Realiza una solicitud POST a la API para registrar la asistencia a un evento específico
-                    await axios.post(`${process.env.BACKEND_URL}/api/events/${eventId}/attend`, null, {
-                        headers: {
-                            "Authorization": `Bearer ${accessToken}` // Añade el token de autenticación en la cabecera
-                        }
-                    });
+					// Verifica si el usuario está autenticado
+					if (!accessToken) {
+						console.error("Debes estar registrado para asistir a un evento.");
+						// Redirige a la página de inicio de sesión
+						window.location.href = "/login";
+						return;
+					}
 
-                    // Si la respuesta es exitosa, registra un mensaje de éxito en la consola
-                    console.log("Asistencia registrada correctamente");
-                } catch (error) {
-                    // Si ocurre un error durante la solicitud, lo registra en la consola
-                    console.error("Error en attendEvent:", error);
-                }
-            },
-      
-      getMessage: async () => {
+					// Realiza una solicitud POST a la API para registrar la asistencia a un evento específico
+					await axios.post(`${process.env.BACKEND_URL}/api/events/${eventId}/attend`, null, {
+						headers: {
+							"Authorization": `Bearer ${accessToken}` // Añade el token de autenticación en la cabecera
+						}
+					});
+
+					// Si la respuesta es exitosa, registra un mensaje de éxito en la consola
+					console.log("Asistencia registrada correctamente");
+				} catch (error) {
+					// Si ocurre un error durante la solicitud, lo registra en la consola
+					console.error("Error en attendEvent:", error);
+				}
+			},
+
+			getMessage: async () => {
 				try {
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/hello`);
 					setStore({ message: response.data.message });

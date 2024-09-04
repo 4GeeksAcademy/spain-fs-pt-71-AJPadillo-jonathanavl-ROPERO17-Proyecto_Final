@@ -40,7 +40,7 @@ def create_user():
     # Obtiene los datos del cuerpo de la solicitud JSON
     data = request.json
     # Crea un nuevo usuario con el email y password proporcionados
-    new_user = User(email=data['email'], password=data['password'])
+    new_user = User(username=data['username'], email=data['email'], password=data['password'])
     # Añade el nuevo usuario a la sesión de la base de datos
     db.session.add(new_user)
     # Confirma los cambios en la base de datos (guarda el nuevo usuario)
@@ -66,27 +66,56 @@ def get_current_user():
     # Devuelve los datos del usuario actual como respuesta JSON
     return jsonify(current_user=user), 200
 
-@api.route('/reviews/<int:game_id>', methods=['GET'])
-def get_reviews(game_id):
-    reviews = Review.query.filter_by(game_id=game_id).all()
-    return jsonify([review.to_dict() for review in reviews])
+@api.route('/reviews', methods=['GET'])
+@jwt_required()
+def get_current_user_reviews():
+    current_user_id = get_jwt_identity()
+    # Verifica si no se encontró la identidad del usuario
+    if current_user_id is None:
+        return jsonify({"msg": "Usuario no encontrado"}), 401
+    # Busca al usuario en la base de datos usando su id
+    user_query = User.query.get(current_user_id)
+    # Si no se encuentra el usuario, devuelve un mensaje de error
+    if user_query is None:
+        return jsonify({"msg": "Usuario no encontrado"}), 401
+    reviews_query = Review.query.filter_by(user_id=current_user_id) 
+    reviews = reviews_query.all()
+    return jsonify([review.serialize() for review in reviews])
 
-@api.route('/reviews', methods=['POST'])
-def add_review():
+@api.route('/reviews/<int:game_id>', methods=['GET'])
+def get_reviews_by_id(game_id):
+    reviews = Review.query.filter_by(game_id=game_id).all()
+    return jsonify([review.serialize() for review in reviews])
+
+@api.route('/reviews/<int:game_id>', methods=['POST'])
+@jwt_required()
+def add_review(game_id):
+    # Obtiene la identidad del usuario actual desde el token JWT
+    current_user_id = get_jwt_identity()
+    # Verifica si no se encontró la identidad del usuario
+    if current_user_id is None:
+        return jsonify({"msg": "Usuario no encontrado"}), 401
+    # Busca al usuario en la base de datos usando su id
+    user_query = User.query.get(current_user_id)
+    # Si no se encuentra el usuario, devuelve un mensaje de error
+    if user_query is None:
+        return jsonify({"msg": "Usuario no encontrado"}), 401
     data = request.json
-    # Asegurarse de que se está enviando el user_id
-    if 'user_id' not in data:
-        return jsonify({"error": "user_id is required"}), 400
+    # Asegurarse de que recibí la información completa
+    if 'title' not in data:
+        return jsonify({"error": "title is required"}), 400
+    if 'comment' not in data:
+        return jsonify({"error": "comment is required"}), 400
     new_review = Review(
-        game_id=data['game_id'],
-        user_id=data['user_id'],  # Ahora usamos el user_id en lugar de username
+        # user_id=current_user_id,
+        game_id=game_id,
         title=data['title'],
         comment=data['comment']
     )
-    db.session.add(new_review)
+    user_query.reviews.append(new_review)
+    # db.session.add(new_review)
     db.session.commit()
-    return jsonify(new_review.to_dict()), 201
-
+    return jsonify(new_review.serialize()), 201
 
 @api.route('/reviews/<int:review_id>', methods=['DELETE'])
 def delete_review(review_id):
@@ -109,7 +138,7 @@ def update_review(review_id):
     # Guardar los cambios en la base de datos
     db.session.commit()
     # En la respuesta JSON, convierte la instancia del modelo Review en un diccionario de Python.
-    return jsonify(review.to_dict()), 200
+    return jsonify(review.serialize()), 200
 
 @api.route('/update-avatar', methods=['PUT'])
 @jwt_required()

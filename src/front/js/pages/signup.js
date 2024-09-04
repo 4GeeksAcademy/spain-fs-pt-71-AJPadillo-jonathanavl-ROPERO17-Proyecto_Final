@@ -15,7 +15,7 @@ export const Signup = () => {
     const handleSignup = async (e) => {
         e.preventDefault(); // Prevenimos la acción por defecto del formulario (recargar la página)
         // Llamamos a la función createUser del contexto global
-        const userCreated = await actions.createUser(email, password);
+        const userCreated = await actions.createUser(username, email, password);
         if (userCreated) {
             console.log("Usuario creado con éxito");
             navigate('/login'); // Redirigimos a la página de login
