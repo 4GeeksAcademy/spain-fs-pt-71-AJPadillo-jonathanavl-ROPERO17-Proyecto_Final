@@ -13,6 +13,7 @@ class User(db.Model):
     events = db.relationship('Event', secondary='user_events', back_populates='attendees')
     reviews = db.relationship('Review', backref='author', lazy=True)
     posts = db.relationship('Post', backref='author', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un usuario puede crear varios posts
+    comments = db.relationship('Comment', backref='author', lazy=True, cascade="all, delete-orphan") # Relación uno a muchos: un usuario puede crear varios comentarios
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -99,4 +100,23 @@ class Post(db.Model):
             "image_url": self.image_url,
             "user_id": self.user_id,
             "comments": [comment.serialize() for comment in self.comments]
+        }
+    
+# Modelo de Comentario
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)  # ID único del comentario
+    content = db.Column(db.Text, nullable=False)  # Contenido del comentario
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # ID del usuario que escribió el comentario
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)  # ID del post al que pertenece el comentario
+
+    def __repr__(self):
+        return f'<Comment {self.id} for Post {self.post_id}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "user_id": self.user_id,
+            "post_id": self.post_id
         }
