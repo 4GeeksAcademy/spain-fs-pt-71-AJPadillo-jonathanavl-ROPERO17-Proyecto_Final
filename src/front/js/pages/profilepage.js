@@ -5,15 +5,16 @@ import './ProfilePage.css';
 
 export const ProfilePage = () => {
     const { store, actions } = useContext(Context);
-    const { currentUser, isLoggedIn, isLoadingUser } = store;
+    const { currentUser, isLoggedIn, isLoadingUser, reviews } = store;
     const [showModal, setShowModal] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(currentUser?.profile_image);
+    const [selectedImage, setSelectedImage] = useState(currentUser?.profile_image || '');
+    const [showAllReviews, setShowAllReviews] = useState(false);
 
     const profileImages = [
-        'https://img.freepik.com/free-vector/cute-ninja-gaming-cartoon-vector-icon-illustration-people-technology-icon-concept-isolated-flat_138676-8079.jpg?t=st=1724607166~exp=1724610766~hmac=6d056c79229df86fe84a23c82bd362d9799f4e0e12bdc40392269b8bbe1ea0c4&w=826',
-        'https://img.freepik.com/free-vector/cute-crocodile-gamer-playing-game-with-headphone-joystick-cartoon-vector-icon-illustration-flat_138676-6509.jpg?t=st=1724603117~exp=1724606717~hmac=42c92177dd5ab4ee04c20b78d9dcd54d99dc9496e089a8b6fa46f78b9e13c3a5&w=826',
-        'https://img.freepik.com/free-vector/cute-astronaut-gaming-with-joystick-headphone-cartoon-vector-icon-illustration-science-techno_138676-9648.jpg?t=st=1724607119~exp=1724610719~hmac=3f04309e3030d6ae66f3d4248a0c903badb274c87442f0423d340905a118906a&w=826',
-        'https://img.freepik.com/free-vector/cute-gorilla-playing-game-virtual-reality-with-joystick-cartoon-vector-icon-illustration-animal_138676-6743.jpg?t=st=1724607141~exp=1724610741~hmac=97e3dfc9b4794a96ee83cc30b25d7f161860941d7fa6db35fe91bb2b353bf10b&w=826'
+        'https://img.freepik.com/free-vector/cute-ninja-gaming-cartoon-vector-icon-illustration-people-technology-icon-concept-isolated-flat_138676-8079.jpg',
+        'https://img.freepik.com/free-vector/cute-crocodile-gamer-playing-game-with-headphone-joystick-cartoon-vector-icon-illustration-flat_138676-6509.jpg',
+        'https://img.freepik.com/free-vector/cute-astronaut-gaming-with-joystick-headphone-cartoon-vector-icon-illustration-science-techno_138676-9648.jpg',
+        'https://img.freepik.com/free-vector/cute-gorilla-playing-game-virtual-reality-with-joystick-cartoon-vector-icon-illustration-animal_138676-6743.jpg'
     ];
 
     const handleImageSelect = (imageUrl) => {
@@ -40,15 +41,19 @@ export const ProfilePage = () => {
                             setSelectedImage('https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
                         }
                     }
+
+                    // Llama a fetchReviews después de cargar los datos del usuario
+                    await actions.fetchReviews();
                 } catch (error) {
                     console.error('Error al obtener la información del usuario:', error);
                 }
             }
         };
+
         if (!isLoadingUser) {
             fetchUserData();
         }
-    }, [isLoadingUser]);
+    }, [isLoadingUser, isLoggedIn]);
 
     const events = [
         'Gran torneo de Fortnite 2024',
@@ -64,18 +69,15 @@ export const ProfilePage = () => {
         'Estrategias para ganar en el nuevo modo de Fortnite'
     ];
 
-    const reviews = [
-        { game: 'Fortnite', rating: 4.5 },
-        { game: 'Apex Legends', rating: 3.5 },
-        { game: 'Dark Souls III', rating: 5 },
-        { game: 'Fortnite', rating: 4 }
-    ];
-
     if (!currentUser) {
         return null
     }
 
     const preferences = currentUser?.preferred_genres ? currentUser.preferred_genres.split(',') : [];
+    
+    // Determinar las reseñas a mostrar según el estado de showAllReviews
+    const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 6);
+
     return (
         <Container className="profile-container">
             <Row className="profile-row">
@@ -92,7 +94,8 @@ export const ProfilePage = () => {
                                 <h3 className="my-profile">My Profile</h3>
                                 <Button variant="primary" className="circle-button" onClick={() => setShowModal(true)}>
                                     <img src="https://www.svgrepo.com/show/345041/pencil-square.svg" alt="Edit" className="pencil-icon" />
-                                </Button>                            </div>
+                                </Button>
+                            </div>
                             <div className="user-info">
                                 <div className="user-name-more-data">
                                     <p className="user-name">@{currentUser.username || 'TheGhostGamer'}</p>
@@ -104,7 +107,7 @@ export const ProfilePage = () => {
                     <Card className="profile-card mt-3">
                         <Card.Body>
                             <Card.Title>Preferencias de Géneros</Card.Title>
-                            <Card.Text>{preferences.join(', ')}</Card.Text>
+                            <Card.Text>{preferences.length > 0 ? preferences.join(', ') : 'No especificado'}</Card.Text>
                         </Card.Body>
                     </Card>
                 </Col>
@@ -140,20 +143,41 @@ export const ProfilePage = () => {
                             <Card.Body>
                                 <Card.Title>Reseñas Escritas</Card.Title>
                                 <div className="review-list">
-                                    {reviews.map((review, index) => (
-                                        <div key={index} className="review-item">
-                                            <h5>{review.game}</h5>
-                                            <p>{review.review || 'No review provided'}</p>
-                                            <div className="review-rating">Rating: {review.rating} ★</div>
-                                        </div>
-                                    ))}
+                                    {displayedReviews.length > 0 ? (
+                                        displayedReviews.map((review, index) => (
+                                            <div key={index} className="review-item">
+                                                <div className="review-header">
+                                                    <h7>{review.title}</h7>
+                                                    <a href={`https://reimagined-train-7v76qvx6g5563xx6x-3000.app.github.dev/game/${review.game_id}`} 
+                                                       target="_blank" 
+                                                       rel="noopener noreferrer"
+                                                       className="view-review-link">
+                                                       Ver reseña
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>No hay reseñas disponibles.</p>
+                                    )}
                                 </div>
-                                <a href="#" className="card-link">Ver todas las reseñas</a>
+                                {reviews.length > 6 && !showAllReviews && (
+                                    <a href="#" className="card-link" onClick={() => setShowAllReviews(true)}>
+                                        Ver todas las reseñas
+                                    </a>
+                                )}
+                                {showAllReviews && reviews.length > 6 && (
+                                    <a href="#" className="card-link" onClick={() => setShowAllReviews(false)}>
+                                        Ocultar reseñas
+                                    </a>
+                                )}
                             </Card.Body>
                         </Card>
                     </div>
                 </Col>
             </Row>
+
+            {/* Modal to select a profile image */}
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Selecciona tu nueva imagen de perfil</Modal.Title>

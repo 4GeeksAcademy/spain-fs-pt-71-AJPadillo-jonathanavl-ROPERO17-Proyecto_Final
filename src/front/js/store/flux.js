@@ -13,9 +13,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			genres: [],
 			gameDetails: null, // Aquí almacenamos los detalles del juego seleccionado
 			searchResults: [],
-			reviews: [], // Almacena las reseñas
-			currentPage: 1, // Almacena la página actual para la paginación
-			totalPages: 1, // Almacena el número total de páginas disponibles
+			reviews: [],
 		},
 		actions: {
 			login: async (email, password) => {
@@ -163,23 +161,31 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			fetchReviews: async (page = 1) => {
+			fetchReviews: async () => {
 				try {
+					const token = localStorage.getItem('accessToken'); // Asegúrate de usar el nombre correcto del token
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/reviews`, {
-						params: {
-							page
+						headers: {
+							'Authorization': `Bearer ${token}`
 						}
 					});
-					setStore({
-						reviews: response.data.reviews,
-						currentPage: response.data.page,
-						totalPages: response.data.total_pages,
-					});
+			
+					// Verifica que la respuesta tenga el formato esperado
+					if (response.data && Array.isArray(response.data)) {
+						setStore({
+							reviews: response.data,
+							currentPage: 1, // Puedes ajustar esto si ya no usas la paginación
+							totalPages: 1  // Puedes ajustar esto si ya no usas la paginación
+						});
+					} else {
+						throw new Error('Unexpected response format');
+					}
+			
 				} catch (error) {
-					console.error("Error fetching reviews:", error.response?.data?.message || error.message);
+					// Mostrar el mensaje de error adecuado
+					console.error("Error fetching reviews:", error.response?.data?.msg || error.message || error.toString());
 				}
 			},
-
 			addReview: async (review) => {
 				try {
 					const accessToken = localStorage.getItem("accessToken");

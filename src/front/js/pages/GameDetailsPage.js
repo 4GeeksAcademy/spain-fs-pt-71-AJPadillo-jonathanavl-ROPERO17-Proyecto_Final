@@ -4,6 +4,7 @@ import { Context } from "../store/appContext";
 import { Container, Row, Col, Button, Form, Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styles/details.css";
+import { FaEdit, FaTimes } from "react-icons/fa";
 
 export const GameDetailsPage = () => {
   const { store, actions } = useContext(Context);
@@ -11,6 +12,8 @@ export const GameDetailsPage = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [newReview, setNewReview] = useState({ title: "", comment: "" });
   const [showModal, setShowModal] = useState(false);
+  const [editReview, setEditReview] = useState(null);
+  const [avatarColors, setAvatarColors] = useState({}); // Añade estado para colores
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,6 +26,50 @@ export const GameDetailsPage = () => {
     };
     fetchData();
   }, [gameId]);
+
+  useEffect(() => {
+    const generateAvatarColors = () => {
+      const colors = {};
+      store.reviews.forEach(review => {
+        colors[review.username] = getRandomColor();
+      });
+      setAvatarColors(colors);
+    };
+    if (store.reviews.length > 0) {
+      generateAvatarColors();
+    }
+  }, [store.reviews]);
+
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+  
+  // Función para crear una imagen con la primera letra del nombre de usuario
+  const getUserAvatar = (username) => {
+    const firstLetter = username.charAt(0).toUpperCase();
+    const canvas = document.createElement('canvas');
+    canvas.width = 50;
+    canvas.height = 50;
+    const context = canvas.getContext('2d');
+  
+    // Rellenar el fondo con un color aleatorio ya generado
+    context.fillStyle = avatarColors[username] || '#000'; // Usa el color del estado
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  
+    // Configuración del texto
+    context.font = 'bold 20px Arial';
+    context.fillStyle = '#fff'; // Texto blanco
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(firstLetter, canvas.width / 2, canvas.height / 2);
+  
+    return canvas.toDataURL();
+  };
 
   const game = store.gameDetails;
   const currentUser = store.currentUser; // Asumiendo que tienes el usuario actual en el estado
@@ -71,6 +118,32 @@ export const GameDetailsPage = () => {
   const handleCloseModal = () => {
     setNewReview({ title: "", comment: "" });
     setShowModal(false);
+  };
+
+  const handleEditReview = (review) => {
+    setEditReview(review);
+    setNewReview({ title: review.title, comment: review.comment });
+    setShowModal(true);
+  };
+  
+  const handleUpdateReview = async (e) => {
+    e.preventDefault();
+    try {
+      await actions.updateReview(editReview.id, newReview.comment);
+      setEditReview(null);
+      setNewReview({ title: "", comment: "" });
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error updating review:", error);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await actions.deleteReview(reviewId);
+    } catch (error) {
+      console.error("Error deleting review:", error);
+    }
   };
 
   return (
@@ -133,7 +206,7 @@ export const GameDetailsPage = () => {
           <hr className="separator" />
           <Row className="align-items-center">
             <Col>
-              <h3 className="game-subtitle">User Reviews</h3>
+            <h3 className="game-subtitle">User Reviews</h3>
             </Col>
             <Col className="text-end">
               {store.isLoggedIn && (
@@ -147,11 +220,41 @@ export const GameDetailsPage = () => {
             <Col>
               {store.reviews.length > 0 ? (
                 store.reviews.map((review, index) => (
-                  <div key={index} className="review-card">
-                    <p>
-                      <strong>{review.username}</strong> | {review.title} - {new Date(review.created_at).toLocaleDateString()}
-                    </p>
-                    <p>{review.comment}</p>
+                  <div key={index} className="review-container">
+                    <div className="review">
+                      <div
+                        className="user-avatar"
+                        style={{ backgroundImage: `url(${getUserAvatar(review.username)})` }}
+                      >
+                      </div>
+                      <div className="review-details">
+                        <div className="review-header">
+                          <h6 className="review-username">@{review.username.charAt(0).toUpperCase() + review.username.slice(1)}</h6>
+                          <p className="review-date">
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <p className="review-comment">{review.comment}</p>
+                        {currentUser && currentUser.username === review.username && (
+                          <div className="review-actions">
+                            <Button
+                              variant="link"
+                              className="review-action-button"
+                              onClick={() => handleEditReview(review)}
+                            >
+                              <FaEdit color="white" />
+                            </Button>
+                            <Button
+                              variant="link"
+                              className="review-action-button"
+                              onClick={() => handleDeleteReview(review.id)}
+                            >
+                              <FaTimes color="white" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -159,22 +262,21 @@ export const GameDetailsPage = () => {
               )}
             </Col>
           </Row>
-
-          {/* Modal para añadir reseñas */}
           <Modal show={showModal} onHide={handleCloseModal}>
             <Modal.Header closeButton>
-              <Modal.Title>Add Review</Modal.Title>
+              <Modal.Title>{editReview ? "Edit Review" : "Submit Review"}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <Form onSubmit={handleSubmitReview}>
+              <Form onSubmit={editReview ? handleUpdateReview : handleSubmitReview}>
                 <Form.Group controlId="formReviewTitle">
                   <Form.Label>Title</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Enter review title"
                     name="title"
                     value={newReview.title}
                     onChange={handleInputChange}
+                    placeholder="Enter review title"
+                    required
                   />
                 </Form.Group>
                 <Form.Group controlId="formReviewComment">
@@ -182,21 +284,23 @@ export const GameDetailsPage = () => {
                   <Form.Control
                     as="textarea"
                     rows={3}
-                    placeholder="Enter review comment"
                     name="comment"
                     value={newReview.comment}
                     onChange={handleInputChange}
+                    placeholder="Enter review comment"
+                    required
                   />
                 </Form.Group>
+                <br />
                 <Button variant="primary" type="submit">
-                  Submit Review
+                  {editReview ? "Update Review" : "Submit Review"}
                 </Button>
               </Form>
             </Modal.Body>
           </Modal>
         </>
       ) : (
-        <p>Loading game details...</p>
+        <p>Loading...</p>
       )}
     </Container>
   );

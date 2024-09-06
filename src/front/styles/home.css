@@ -12,20 +12,14 @@
 
 .card {
     background-color: #fff;
-    /* Fondo blanco */
     border-radius: 10px;
-    /* Bordes redondeados */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    /* Sombra sutil */
+    position: relative;
     overflow: hidden;
-    /* Oculta el desbordamiento de contenido */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    /* Transiciones suaves */
     margin: 0 auto 20px;
-    /* Espacio inferior */
-    width: 250px;
+    width: 280px;
     height: auto;
-    /* Asegura que las tarjetas tengan altura completa en el contenedor */
     transition: transform 0.3s ease;
 }
 
@@ -122,17 +116,32 @@
 /* Asegúrate de que el contenedor del carrusel tenga posición relativa */
 .carousel {
     position: relative;
+    width: 100%;
+    height: 100vh; /* Ajusta la altura del carrusel para ocupar toda la altura de la pantalla */
 }
 
-/* Opcional: Estilo para las flechas */
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-    background-color: rgba(0, 0, 0, 0.5);
-    /* Fondo oscuro para las flechas */
-    border-radius: 50%;
-    /* Opcional: Hacer las flechas circulares */
-    width: 30px;
-    height: 30px;
+.carousel-control-prev,
+.carousel-control-next {
+    position: fixed;
+    top: 50%;
+    width: 5%;
+    z-index: 10;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.822); /* Fondo oscuro para las flechas */
+    border-radius: 10%;
+    width: 40px; /* Ajusta el tamaño según sea necesario */
+    height: 40px; /* Ajusta el tamaño según sea necesario */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-control-prev {
+    left: 10px; /* Ajusta la distancia desde el borde izquierdo */
+}
+
+.carousel-control-next {
+    right: 10px; /* Ajusta la distancia desde el borde derecho */
 }
 
 .metacritic-score {
@@ -170,15 +179,17 @@
     border-radius: 8px;
     font-size: 13px;
     line-height: 12px;
-    padding-left: 17px;
-    padding-right: 17px;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding: 8px 17px;
     cursor: pointer;
     text-align: center;
     display: inline-flex;
     align-items: center;
-  }
+    position: absolute; /* Fijo dentro de la tarjeta */
+    bottom: 15px; /* Ajusta la distancia desde el borde inferior de la tarjeta */
+    left: 15px; /* Ajusta la distancia desde el borde izquierdo de la tarjeta */
+    z-index: 10; /* Asegúrate de que esté sobre otros elementos dentro de la tarjeta */
+}
+
   
   .card-button:hover {
     background-color: #a1a1a1;
@@ -197,7 +208,6 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil */
 }
 
-/* Línea decorativa a la izquierda y derecha del título */
 .heading {
     border-bottom: 2px solid #ddd; /* Borde inferior sutil */
     background-color: #fff; /* Fondo blanco */
@@ -282,3 +292,4 @@
     background-color: #f1f1f1;
     border-radius: 4px;
 }
+

@@ -51,7 +51,8 @@ export const Home = () => {
 
     return (
         <Container className="my-4">
-            <h1 className="heading">Games</h1>'\n'
+            <h1 className="heading">Games</h1> 
+            <br />
             {store.loading && <p>Loading...</p>}
             <Carousel 
                 controls={true} 
@@ -70,6 +71,7 @@ export const Home = () => {
                                             <h5 className="card-title">{game.name}</h5>
                                             <p className="card-text">Released: {game.released}</p>
                                             <p className="card-text">Genres: {game.genres.map(genre => genre.name).join(', ')}</p>
+                                            <br />
                                             <button className="card-button" onClick={() => navigateToDetails(game.id)}>Details</button>
                                         </div>
                                         <div className={`metacritic-score ${getMetacriticClass(game.metacritic)}`}>
