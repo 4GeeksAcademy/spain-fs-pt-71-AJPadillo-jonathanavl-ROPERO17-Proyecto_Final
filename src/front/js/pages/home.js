@@ -9,11 +9,19 @@ export const Home = () => {
     const { store, actions } = useContext(Context);
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // Puedes ajustar el tamaño según tus necesidades
 
     useEffect(() => {
         if (store.games.length === 0) {
             actions.getGames();
         }
+
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, [store.games.length, actions]);
 
     // Agrupar juegos en bloques de 8
@@ -31,6 +39,11 @@ export const Home = () => {
         if (loadedGames < maxGames && (selectedIndex + 1) * 8 >= loadedGames) {
             actions.loadMoreGames();
         }
+
+        // Scroll to top on mobile
+        if (isMobile) {
+            window.scrollTo(0, 0);
+        }
     };
 
     const getMetacriticClass = (score) => {
@@ -40,18 +53,20 @@ export const Home = () => {
         if (decimalScore < 8) return "metacritic-orange";
         return "metacritic-green";
     };
- // Dividir por 10 y mostrar un decimal
+
     const formatMetacritic = (score) => {
         const decimalScore = score / 10;
         return decimalScore === 0 ? "N/A" : decimalScore.toFixed(1);
     };
+
     const navigateToDetails = (id) => {
         navigate(`/game/${id}`);
     };
 
     return (
         <Container className="my-4">
-            <h1 className="heading">Games</h1>'\n'
+            <h1 className="heading">Games</h1> 
+            <br />
             {store.loading && <p>Loading...</p>}
             <Carousel 
                 controls={true} 
@@ -70,6 +85,7 @@ export const Home = () => {
                                             <h5 className="card-title">{game.name}</h5>
                                             <p className="card-text">Released: {game.released}</p>
                                             <p className="card-text">Genres: {game.genres.map(genre => genre.name).join(', ')}</p>
+                                            <br />
                                             <button className="card-button" onClick={() => navigateToDetails(game.id)}>Details</button>
                                         </div>
                                         <div className={`metacritic-score ${getMetacriticClass(game.metacritic)}`}>
