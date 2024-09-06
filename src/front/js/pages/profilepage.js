@@ -20,7 +20,7 @@ export const ProfilePage = () => {
     const handleImageSelect = (imageUrl) => {
         setSelectedImage(imageUrl);
         setShowModal(false);
-        localStorage.setItem('profileImage', imageUrl); // Guardar la imagen seleccionada en localStorage
+        localStorage.setItem('profileImage', imageUrl);
         actions.updateProfileImage(imageUrl);
     };
 
@@ -30,9 +30,9 @@ export const ProfilePage = () => {
                 window.location.href = '/login';
             } else {
                 try {
-                    const storedImage = localStorage.getItem('profileImage'); // Intentar recuperar la imagen de localStorage
+                    const storedImage = localStorage.getItem('profileImage'); 
                     if (storedImage) {
-                        setSelectedImage(storedImage); // Usar la imagen almacenada en localStorage si existe
+                        setSelectedImage(storedImage);
                     } else {
                         const user = await actions.getCurrentUser();
                         if (user && user.profile_image) {

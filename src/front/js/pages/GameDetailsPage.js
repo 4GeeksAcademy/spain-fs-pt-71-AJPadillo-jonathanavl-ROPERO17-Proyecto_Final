@@ -13,7 +13,7 @@ export const GameDetailsPage = () => {
   const [newReview, setNewReview] = useState({ title: "", comment: "" });
   const [showModal, setShowModal] = useState(false);
   const [editReview, setEditReview] = useState(null);
-  const [avatarColors, setAvatarColors] = useState({}); // Añade estado para colores
+  const [avatarColors, setAvatarColors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +58,7 @@ export const GameDetailsPage = () => {
     const context = canvas.getContext('2d');
   
     // Rellenar el fondo con un color aleatorio ya generado
-    context.fillStyle = avatarColors[username] || '#000'; // Usa el color del estado
+    context.fillStyle = avatarColors[username] || '#000';
     context.fillRect(0, 0, canvas.width, canvas.height);
   
     // Configuración del texto
@@ -72,7 +72,7 @@ export const GameDetailsPage = () => {
   };
 
   const game = store.gameDetails;
-  const currentUser = store.currentUser; // Asumiendo que tienes el usuario actual en el estado
+  const currentUser = store.currentUser;
 
   const getMetacriticClass = (score) => {
     const decimalScore = score / 10;
