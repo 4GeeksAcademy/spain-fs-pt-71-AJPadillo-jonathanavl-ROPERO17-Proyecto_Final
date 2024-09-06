@@ -12,6 +12,7 @@ class User(db.Model):
     preferred_genres = db.Column(db.String(200))  # Almacena géneros preferidos como una cadena separada por comas
     events = db.relationship('Event', secondary='user_events', back_populates='attendees')
     reviews = db.relationship('Review', backref='author', lazy=True)
+    posts = db.relationship('Post', backref='author', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un usuario puede crear varios posts
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -25,7 +26,8 @@ class User(db.Model):
             "profile_image": self.profile_image,
             "preferred_genres": self.preferred_genres,
             "events": [event.serialize() for event in self.events],
-            "reviews": [review.serialize() for review in self.reviews]
+            "reviews": [review.serialize() for review in self.reviews],
+            "posts": [post.serialize() for post in self.posts]
         }
     
 class Review(db.Model):
@@ -76,3 +78,25 @@ user_events = db.Table('user_events',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
     db.Column('event_id', db.Integer, db.ForeignKey('events.id'), primary_key=True)
 )
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)  # ID único del post
+    title = db.Column(db.String(120), nullable=False)  # Título del post
+    content = db.Column(db.Text, nullable=False)  # Contenido del post
+    image_url = db.Column(db.String(255))  # URL de la imagen (opcional)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # ID del usuario que creó el post
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un post puede tener muchos comentarios
+
+    def __repr__(self):
+        return f'<Post {self.title}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "image_url": self.image_url,
+            "user_id": self.user_id,
+            "comments": [comment.serialize() for comment in self.comments]
+        }
