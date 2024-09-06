@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Review, Event
+from api.models import db, User, Review, Event, Post
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
@@ -200,6 +200,53 @@ def delete_event(event_id):
     db.session.delete(event)
     db.session.commit()
     return jsonify({"message": "Event deleted successfully"}), 200
+
+@api.route('/posts', methods=['POST'])
+@jwt_required()
+def create_post():
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    new_post = Post(
+        title=data['title'],
+        content=data['content'],
+        image_url=data.get('image_url'),
+        user_id=current_user_id
+    )
+    db.session.add(new_post)
+    db.session.commit()
+
+    return jsonify(new_post.serialize()), 201
+
+@api.route('/posts/<int:post_id>', methods=['PUT'])
+@jwt_required()
+def update_post(post_id):
+    current_user_id = get_jwt_identity()
+    post = Post.query.get_or_404(post_id)
+
+    if post.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    post.title = data.get('title', post.title)
+    post.content = data.get('content', post.content)
+    post.image_url = data.get('image_url', post.image_url)
+
+    db.session.commit()
+
+    return jsonify(post.serialize()), 200
+
+@api.route('/posts/<int:post_id>', methods=['DELETE'])
+@jwt_required()
+def delete_post(post_id):
+    current_user_id = get_jwt_identity()
+    post = Post.query.get_or_404(post_id)
+
+    if post.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+    db.session.delete(post)
+    db.session.commit()
+
+    return jsonify({"message": "Post deleted successfully"}), 200
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
