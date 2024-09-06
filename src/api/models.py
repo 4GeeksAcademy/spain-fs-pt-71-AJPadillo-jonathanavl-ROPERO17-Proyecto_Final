@@ -86,7 +86,7 @@ class Post(db.Model):
     title = db.Column(db.String(120), nullable=False)  # Título del post
     content = db.Column(db.Text, nullable=False)  # Contenido del post
     image_url = db.Column(db.String(255))  # URL de la imagen (opcional)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # ID del usuario que creó el post
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ID del usuario que creó el post
     comments = db.relationship('Comment', backref='post', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un post puede tener muchos comentarios
 
     def __repr__(self):
@@ -107,7 +107,7 @@ class Comment(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)  # ID único del comentario
     content = db.Column(db.Text, nullable=False)  # Contenido del comentario
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # ID del usuario que escribió el comentario
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ID del usuario que escribió el comentario
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)  # ID del post al que pertenece el comentario
 
     def __repr__(self):
