@@ -14,7 +14,6 @@
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    position: relative;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     margin: 0 auto 20px;
@@ -293,3 +292,56 @@
     border-radius: 4px;
 }
 
+/* Estilo para la vista móvil */
+@media (max-width: 767px) {
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    footer {
+        margin-top: auto;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f1f1f1; /* Cambia esto al color que desees */
+        text-align: center;
+        padding: 10px;
+        z-index: 1000;
+    }
+
+    .app-background {
+        background: url('https://st4.depositphotos.com/22719282/39383/i/450/depositphotos_393830882-stock-photo-video-game-controller-gamepad-background.jpg') repeat; /* Repite la imagen */
+        background-size: repeat; /* Asegura que la imagen cubra todo el fondo */
+        background-attachment: fixed; /* Fija la imagen de fondo para que no se mueva con el scroll */
+        height: 100vh; /* Asegura que el contenedor cubra toda la altura de la pantalla */
+        width: 100vw; /* Asegura que el contenedor cubra todo el ancho de la pantalla */
+        position: relative; /* Asegura que el contenedor tenga una posición relativa */
+    }
+
+    .carousel {
+        height: 70vh; /* Ajusta la altura del carrusel para móviles */
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 40px; /* Ajusta el tamaño de las flechas en móviles */
+        height: 40px; /* Ajusta el tamaño de las flechas en móviles */
+        background-color: rgba(0, 0, 0, 0.822); /* Fondo oscuro para las flechas */
+        border-radius: 10%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .carousel-control-prev {
+        left: 10px; /* Ajusta la distancia desde el borde izquierdo */
+    }
+
+    .carousel-control-next {
+        right: 10px; /* Ajusta la distancia desde el borde derecho */
+    }
+}
