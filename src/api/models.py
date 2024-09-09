@@ -56,6 +56,7 @@ class Event(db.Model):
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
+    image_url = db.Column(db.String(255), nullable=True)  # Nuevo campo para la URL de la imagen
     # Relación muchos a muchos con usuarios
     attendees = db.relationship('User', secondary='user_events', back_populates='events')
 
@@ -68,6 +69,7 @@ class Event(db.Model):
             "name": self.name,
             "description": self.description,
             "date": self.date,
+            "image_url": self.image_url,  # Añadir URL de imagen a la serialización
             "attendees": [user.serialize() for user in self.attendees]
         }
 

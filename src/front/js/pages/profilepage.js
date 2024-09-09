@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Card, Image, Button, Modal } from 'react-bootstrap';
 import { Context } from '../store/appContext';
-import './ProfilePage.css';
+import "../../styles/ProfilePage.css";
 
 export const ProfilePage = () => {
     const { store, actions } = useContext(Context);

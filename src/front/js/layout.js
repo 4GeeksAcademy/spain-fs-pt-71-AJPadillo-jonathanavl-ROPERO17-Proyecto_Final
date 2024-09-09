@@ -11,6 +11,7 @@ import { Login } from "./pages/login";
 import { Signup } from "./pages/signup";
 import { ProfilePage } from "./pages/profilepage";
 import { GameDetailsPage } from "./pages/GameDetailsPage";
+import { Events } from "./pages/events"; 
 
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
@@ -35,6 +36,7 @@ const Layout = () => {
                         <Route element={<Signup />} path="/signup" />
                         <Route element={<Single />} path="/single/:theid" />
                         <Route element={<ProfilePage />} path="/profilepage" />
+                        <Route element={<Events />} path="/events" />
                         <Route element={<GameDetailsPage />} path="/game/:gameId" />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
@@ -45,4 +47,4 @@ const Layout = () => {
     );
 };
 
-export default injectContext(Layout);
+export default injectContext(Layout)

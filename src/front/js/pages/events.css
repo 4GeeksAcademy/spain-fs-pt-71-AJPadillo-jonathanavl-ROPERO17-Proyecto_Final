@@ -1,0 +1,74 @@
+.events-container {
+    margin-top: 20px;
+  }
+  
+  .events-card {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .events-image {
+    width: 100%;
+    height: 400px; /* Ajusta la altura de la imagen según sea necesario */
+    object-fit: cover;
+  }
+  
+  .events-details {
+    padding: 15px;
+    background-color: #fff;
+  }
+  
+  .events-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro para el nombre del evento */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    z-index: 1;
+  }
+  
+  .events-actions {
+    margin-top: 10px;
+  }
+  
+  .btn-admin {
+    background-color: #6c757d; /* Gris */
+    border: none;
+    color: #fff;
+  }
+  
+  .btn-attend {
+    background-color: #6f42c1; /* Morado */
+    border: none;
+    color: #fff;
+  }
+  
+  .btn-admin, .btn-attend {
+    margin-right: 10px;
+  }
+  
+  .card-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .events-card .admin-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  
+  .events-card .admin-actions .btn {
+    margin-right: 10px;
+  }
+  
