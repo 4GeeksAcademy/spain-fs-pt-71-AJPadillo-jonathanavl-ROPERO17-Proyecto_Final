@@ -62,7 +62,9 @@ def get_current_user():
     if user_query is None:
         return jsonify({"msg": "Usuario no encontrado"}), 401
     # Serializa los datos del usuario para enviarlos como JSON
+    print(user_query)
     user = user_query.serialize()
+    print(user)
     # Devuelve los datos del usuario actual como respuesta JSON
     return jsonify(current_user=user), 200
 
@@ -168,7 +170,11 @@ def get_users():
 @api.route('/events', methods=['GET'])
 def get_events():
     events = Event.query.all()
-    return jsonify([event.serialize() for event in events])
+    result = [event.serialize() for event in events]
+    # print('\n\n\n*******************************')
+    # print(result)
+    # print('\n*******************************\n\n\n')
+    return jsonify(result)
 
 @api.route('/events', methods=['POST'])
 def add_event():
@@ -176,11 +182,25 @@ def add_event():
     new_event = Event(
         name=data['name'],
         description=data['description'],
-        date=data['date']  # Asegúrate de que la fecha esté en un formato correcto, como ISO 8601
+        date=data['date'],  # Asegúrate de que la fecha esté en un formato correcto, como ISO 8601
+        image_url=data.get('image_url')  # Añadir la URL de la imagen
     )
     db.session.add(new_event)
     db.session.commit()
     return jsonify(new_event.serialize()), 201
+
+@api.route('/events/<int:event_id>/attend', methods=['POST'])
+@jwt_required()
+def attend_event(event_id):
+    current_user_id = get_jwt_identity()
+    event = Event.query.get_or_404(event_id)
+    user = User.query.get(current_user_id)
+    if user in event.attendees:
+        return jsonify({"message": "Ya estás registrado en este evento"}), 400
+    event.attendees.append(user)
+    db.session.commit()
+
+    return jsonify({"message": "Asistencia registrada"}), 200
 
 @api.route('/events/<int:event_id>', methods=['PUT'])
 def update_event(event_id):
@@ -189,10 +209,12 @@ def update_event(event_id):
     
     event.name = data.get('name', event.name)
     event.description = data.get('description', event.description)
-    event.date = data.get('date', event.date)  # Nuevamente, asegurar de que la fecha esté en un formato correcto
+    event.date = data.get('date', event.date)  # Nuevamente, asegúrate de que la fecha esté en un formato correcto
+    event.image_url = data.get('image_url', event.image_url)  # Actualizar la URL de la imagen
     
     db.session.commit()
     return jsonify(event.serialize()), 200
+
 
 @api.route('/events/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):

@@ -14,6 +14,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			gameDetails: null, // Aquí almacenamos los detalles del juego seleccionado
 			searchResults: [],
 			reviews: [],
+			events: []
 		},
 		actions: {
 			login: async (email, password) => {
@@ -252,6 +253,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
+			getEvents: async () => {
+				try {
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/events`);
+					setStore({ events: response.data });
+				} catch (error) {
+					console.error("Error fetching events:", error.response?.data?.message || error.message);
+				}
+			},
 			// Acción para crear un nuevo evento
 			createEvent: async (event) => {
 				try {
