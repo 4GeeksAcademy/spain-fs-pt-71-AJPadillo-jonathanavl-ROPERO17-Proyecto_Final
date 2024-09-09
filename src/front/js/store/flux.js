@@ -356,6 +356,120 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
+			createPost: async (title, content, imageUrl, current_user_id) => {
+				const token = localStorage.getItem('token');
+				const resp = await fetch(process.env.BACKEND_URL + '/api/posts', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({
+						
+						title: title,
+						content: content,
+						image_url: imageUrl
+						
+					})
+				});
+				if (resp.ok) {
+					const data = await resp.json();
+					console.log('Post creado:', data);
+				} else {
+					console.error('Error al crear el post');
+				}
+			},
+			
+			updatePost: async (postId, title, content, imageUrl) => {
+				const token = localStorage.getItem('token');
+				const resp = await fetch(`${process.env.BACKEND_URL}/api/posts/${postId}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({
+						title: title,
+						content: content,
+						image_url: imageUrl
+					})
+				});
+				if (resp.ok) {
+					const data = await resp.json();
+					console.log('Post actualizado:', data);
+				} else {
+					console.error('Error al actualizar el post');
+				}
+			},
+			
+			deletePost: async (postId) => {
+				const token = localStorage.getItem('token');
+				const resp = await fetch(`${process.env.BACKEND_URL}/api/posts/${postId}`, {
+					method: 'DELETE',
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				});
+				if (resp.ok) {
+					console.log('Post eliminado');
+				} else {
+					console.error('Error al eliminar el post');
+				}
+			},
+			
+			
+			createComment: async (postId, content) => {
+				const token = localStorage.getItem('token');
+				const resp = await fetch(`${process.env.BACKEND_URL}/api/posts/${postId}/comments`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({ content: content })
+				});
+				if (resp.ok) {
+					const data = await resp.json();
+					console.log('Comentario creado:', data);
+				} else {
+					console.error('Error al crear el comentario');
+				}
+			},
+			
+			updateComment: async (commentId, content) => {
+				const token = localStorage.getItem('token');
+				const resp = await fetch(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`
+					},
+					body: JSON.stringify({ content: content })
+				});
+				if (resp.ok) {
+					const data = await resp.json();
+					console.log('Comentario actualizado:', data);
+				} else {
+					console.error('Error al actualizar el comentario');
+				}
+			},
+			
+			deleteComment: async (commentId) => {
+				const token = localStorage.getItem('token');
+				const resp = await fetch(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
+					method: 'DELETE',
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				});
+				if (resp.ok) {
+					console.log('Comentario eliminado');
+				} else {
+					console.error('Error al eliminar el comentario');
+				}
+			},
+			
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try {
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/hello`);
