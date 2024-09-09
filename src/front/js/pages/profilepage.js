@@ -5,7 +5,7 @@ import "../../styles/ProfilePage.css";
 
 export const ProfilePage = () => {
     const { store, actions } = useContext(Context);
-    const { currentUser, isLoggedIn, isLoadingUser, reviews, events } = store;
+    const { currentUser, isLoggedIn, isLoadingUser, reviews } = store;
     const [showModal, setShowModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(currentUser?.profile_image || '');
     const [showAllReviews, setShowAllReviews] = useState(false);
@@ -30,24 +30,21 @@ export const ProfilePage = () => {
                 window.location.href = '/login';
             } else {
                 try {
-                    const storedImage = localStorage.getItem('profileImage'); 
+                    const storedImage = localStorage.getItem('profileImage');
                     if (storedImage) {
                         setSelectedImage(storedImage);
                     } else {
                         const user = await actions.getCurrentUser();
-                        if (user && user.profile_image) {
-                            setSelectedImage(user.profile_image);
-                        } else {
-                            setSelectedImage('https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
+                        if (user) {
+                            setSelectedImage(user.profile_image || 'https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
                         }
+                        // No need to fetch events separately; they are included in the user data
                     }
 
-                    // Llama a fetchReviews después de cargar los datos del usuario
+                    // Fetch reviews after loading user data
                     await actions.fetchReviews();
-                    // Llama a fetchEvents para obtener los eventos a los que el usuario asistirá
-                    await actions.fetchEvents();
                 } catch (error) {
-                    console.error('Error al obtener la información del usuario:', error);
+                    console.error('Error fetching user data:', error);
                 }
             }
         };
@@ -55,7 +52,7 @@ export const ProfilePage = () => {
         if (!isLoadingUser) {
             fetchUserData();
         }
-    }, [isLoadingUser, isLoggedIn]);
+    }, [isLoadingUser, isLoggedIn, actions]);
 
     const posts = [
         '¿Alguien sabe cómo derrotar a Nameless King en Dark Souls III?',
@@ -65,12 +62,13 @@ export const ProfilePage = () => {
     ];
 
     if (!currentUser) {
-        return null
+        return null;
     }
 
     const preferences = currentUser?.preferred_genres ? currentUser.preferred_genres.split(',') : [];
-    
-    // Determinar las reseñas a mostrar según el estado de showAllReviews
+    const events = currentUser?.events || [];
+
+    // Determine reviews to show based on the showAllReviews state
     const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 6);
 
     return (
@@ -112,10 +110,10 @@ export const ProfilePage = () => {
                             <Card.Body>
                                 <Card.Title>Eventos</Card.Title>
                                 <Card.Text>
-                                    {events && events.length > 0 ? (
+                                    {events.length > 0 ? (
                                         events.map((event, index) => (
                                             <div key={index} className="event-item">
-                                                {event.name} - {event.date} {/* Ajusta según la estructura de tu evento */}
+                                                {event.name} - {event.date} {/* Adjust according to your event structure */}
                                             </div>
                                         ))
                                     ) : (
