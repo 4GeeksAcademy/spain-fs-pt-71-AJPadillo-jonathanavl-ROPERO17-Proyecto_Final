@@ -10,7 +10,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
     profile_image = db.Column(db.String(255), nullable=True)
     preferred_genres = db.Column(db.String(200))  # Almacena géneros preferidos como una cadena separada por comas
-    events = db.relationship('Event', secondary='user_events', back_populates='attendees')
+    events = db.relationship('Event', secondary='user_events', backref='attendees')
     reviews = db.relationship('Review', backref='author', lazy=True)
 
     def __repr__(self):
@@ -24,7 +24,7 @@ class User(db.Model):
             "is_active": self.is_active,
             "profile_image": self.profile_image,
             "preferred_genres": self.preferred_genres,
-            "events": [event.serialize() for event in self.events],
+            # "events": [event.serialize() for event in self.events],
             "reviews": [review.serialize() for review in self.reviews]
         }
     
@@ -57,8 +57,6 @@ class Event(db.Model):
     description = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
     image_url = db.Column(db.String(255), nullable=True)  # Nuevo campo para la URL de la imagen
-    # Relación muchos a muchos con usuarios
-    attendees = db.relationship('User', secondary='user_events', back_populates='events')
 
     def __repr__(self):
         return f'<Event {self.name}>'

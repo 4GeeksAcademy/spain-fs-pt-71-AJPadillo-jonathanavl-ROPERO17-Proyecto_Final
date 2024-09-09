@@ -62,7 +62,9 @@ def get_current_user():
     if user_query is None:
         return jsonify({"msg": "Usuario no encontrado"}), 401
     # Serializa los datos del usuario para enviarlos como JSON
+    print(user_query)
     user = user_query.serialize()
+    print(user)
     # Devuelve los datos del usuario actual como respuesta JSON
     return jsonify(current_user=user), 200
 

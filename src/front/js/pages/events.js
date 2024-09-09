@@ -16,14 +16,13 @@ export const Events = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Efecto para obtener usuario y eventos una vez que el componente se monta
   useEffect(() => {
     const fetchUserAndEvents = async () => {
       try {
-        await actions.getCurrentUser(); // Obtener usuario
-        await actions.getEvents(); // Obtener eventos
+        await actions.getCurrentUser(); 
+        await actions.getEvents();
 
-        // Verifica el usuario después de cargar los datos
+        
         if (store.currentUser && store.currentUser.email === 'admin@admin.es') {
           setIsAdmin(true);
         } else {
@@ -35,7 +34,7 @@ export const Events = () => {
     };
 
     fetchUserAndEvents();
-  }, []); // Dependencias vacías para ejecutar solo una vez al montar el componente
+  }, []); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +47,7 @@ export const Events = () => {
         await actions.createEvent(newEvent);
       }
       setNewEvent({ name: '', description: '', date: '', image_url: '' });
-      setShowModal(false); // Cierra el modal
+      setShowModal(false); 
     } catch (error) {
       console.error('Error submitting event:', error);
     }

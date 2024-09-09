@@ -351,7 +351,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					}
 
 					// Realiza una solicitud POST a la API para registrar la asistencia a un evento específico
-					await axios.post(`${process.env.BACKEND_URL}/api/events/${eventId}/attendees`, null, {
+					await axios.post(`${process.env.BACKEND_URL}/api/events/${eventId}/attend`, null, {
 						headers: {
 							"Authorization": `Bearer ${accessToken}` // Añade el token de autenticación en la cabecera
 						}
