@@ -356,7 +356,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			createPost: async (title, content, imageUrl, current_user_id) => {
+			createPost: async (title, content, imageUrl) => {
 				const token = localStorage.getItem('token');
 				const resp = await fetch(process.env.BACKEND_URL + '/api/posts', {
 					method: 'POST',
