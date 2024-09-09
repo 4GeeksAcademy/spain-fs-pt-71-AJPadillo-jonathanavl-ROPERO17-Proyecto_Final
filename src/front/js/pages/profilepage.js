@@ -5,7 +5,7 @@ import "../../styles/ProfilePage.css";
 
 export const ProfilePage = () => {
     const { store, actions } = useContext(Context);
-    const { currentUser, isLoggedIn, isLoadingUser, reviews } = store;
+    const { currentUser, isLoggedIn, isLoadingUser, reviews, events } = store;
     const [showModal, setShowModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(currentUser?.profile_image || '');
     const [showAllReviews, setShowAllReviews] = useState(false);
@@ -44,6 +44,8 @@ export const ProfilePage = () => {
 
                     // Llama a fetchReviews después de cargar los datos del usuario
                     await actions.fetchReviews();
+                    // Llama a fetchEvents para obtener los eventos a los que el usuario asistirá
+                    await actions.fetchEvents();
                 } catch (error) {
                     console.error('Error al obtener la información del usuario:', error);
                 }
@@ -54,13 +56,6 @@ export const ProfilePage = () => {
             fetchUserData();
         }
     }, [isLoadingUser, isLoggedIn]);
-
-    const events = [
-        'Gran torneo de Fortnite 2024',
-        'Evento de Apex Legends: La batalla definitiva',
-        'Maratón de League of Legends',
-        'Torneo de Counter-Strike: Global Offensive'
-    ];
 
     const posts = [
         '¿Alguien sabe cómo derrotar a Nameless King en Dark Souls III?',
@@ -117,11 +112,15 @@ export const ProfilePage = () => {
                             <Card.Body>
                                 <Card.Title>Eventos</Card.Title>
                                 <Card.Text>
-                                    {events.map((event, index) => (
-                                        <div key={index} className="event-item">
-                                            {event}
-                                        </div>
-                                    ))}
+                                    {events && events.length > 0 ? (
+                                        events.map((event, index) => (
+                                            <div key={index} className="event-item">
+                                                {event.name} - {event.date} {/* Ajusta según la estructura de tu evento */}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>No hay eventos disponibles.</p>
+                                    )}
                                 </Card.Text>
                                 <a href="#" className="card-link">Ver todos los eventos</a>
                             </Card.Body>

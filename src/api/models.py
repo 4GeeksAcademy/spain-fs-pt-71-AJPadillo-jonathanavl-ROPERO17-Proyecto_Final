@@ -10,8 +10,10 @@ class User(db.Model):
     is_active = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
     profile_image = db.Column(db.String(255), nullable=True)
     preferred_genres = db.Column(db.String(200))  # Almacena géneros preferidos como una cadena separada por comas
-    events = db.relationship('Event', secondary='user_events', backref='attendees')
+    events = db.relationship('Event', secondary='user_events', back_populates='attendees')
     reviews = db.relationship('Review', backref='author', lazy=True)
+    posts = db.relationship('Post', backref='author', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un usuario puede crear varios posts
+    comments = db.relationship('Comment', backref='author', lazy=True, cascade="all, delete-orphan") # Relación uno a muchos: un usuario puede crear varios comentarios
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -24,8 +26,21 @@ class User(db.Model):
             "is_active": self.is_active,
             "profile_image": self.profile_image,
             "preferred_genres": self.preferred_genres,
-            # "events": [event.serialize() for event in self.events],
-            "reviews": [review.serialize() for review in self.reviews]
+            "events": [event.base_serialize() for event in self.events],
+            "reviews": [review.serialize() for review in self.reviews],
+            "posts": [post.serialize() for post in self.posts]
+        }
+
+    def base_serialize(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "username": self.username,
+            "is_active": self.is_active,
+            "profile_image": self.profile_image,
+            "preferred_genres": self.preferred_genres,
+            "reviews": [review.serialize() for review in self.reviews],
+            "posts": [post.serialize() for post in self.posts]
         }
     
 class Review(db.Model):
@@ -56,7 +71,8 @@ class Event(db.Model):
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
-    image_url = db.Column(db.String(255), nullable=True)  # Nuevo campo para la URL de la imagen
+    image_url = db.Column(db.String(255))  # Columna opcional para la URL de la imagen
+    attendees = db.relationship('User', secondary='user_events', back_populates='events')
 
     def __repr__(self):
         return f'<Event {self.name}>'
@@ -67,8 +83,17 @@ class Event(db.Model):
             "name": self.name,
             "description": self.description,
             "date": self.date,
-            "image_url": self.image_url,  # Añadir URL de imagen a la serialización
-            "attendees": [user.serialize() for user in self.attendees]
+            "image_url": self.image_url,  # Incluye la URL de la imagen en la serialización
+            "attendees": [user.base_serialize() for user in self.attendees]
+        }
+    
+    def base_serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "date": self.date,
+            "image_url": self.image_url  # Incluye la URL de la imagen también en la serialización base
         }
 
 # Tabla de asociación para la relación muchos a muchos entre User y Event
@@ -76,3 +101,44 @@ user_events = db.Table('user_events',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
     db.Column('event_id', db.Integer, db.ForeignKey('events.id'), primary_key=True)
 )
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)  # ID único del post
+    title = db.Column(db.String(120), nullable=False)  # Título del post
+    content = db.Column(db.Text, nullable=False)  # Contenido del post
+    image_url = db.Column(db.String(255))  # URL de la imagen (opcional)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ID del usuario que creó el post
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un post puede tener muchos comentarios
+
+    def __repr__(self):
+        return f'<Post {self.title}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "image_url": self.image_url,
+            "user_id": self.user_id,
+            "comments": [comment.serialize() for comment in self.comments]
+        }
+    
+# Modelo de Comentario
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)  # ID único del comentario
+    content = db.Column(db.Text, nullable=False)  # Contenido del comentario
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ID del usuario que escribió el comentario
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)  # ID del post al que pertenece el comentario
+
+    def __repr__(self):
+        return f'<Comment {self.id} for Post {self.post_id}>'
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "user_id": self.user_id,
+            "post_id": self.post_id
+        }

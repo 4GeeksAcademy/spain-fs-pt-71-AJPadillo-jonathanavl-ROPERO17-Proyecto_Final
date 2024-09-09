@@ -170,7 +170,11 @@ def get_users():
 @api.route('/events', methods=['GET'])
 def get_events():
     events = Event.query.all()
-    return jsonify([event.serialize() for event in events])
+    result = [event.serialize() for event in events]
+    # print('\n\n\n*******************************')
+    # print(result)
+    # print('\n*******************************\n\n\n')
+    return jsonify(result)
 
 @api.route('/events', methods=['POST'])
 def add_event():

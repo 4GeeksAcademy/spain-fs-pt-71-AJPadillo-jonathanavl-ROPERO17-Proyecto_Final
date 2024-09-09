@@ -77,6 +77,7 @@ export const Events = () => {
   const handleAttend = async (eventId) => {
     try {
       await actions.attendEvent(eventId);
+      await actions.getEvents();
     } catch (error) {
       console.error('Error attending event:', error);
     }
