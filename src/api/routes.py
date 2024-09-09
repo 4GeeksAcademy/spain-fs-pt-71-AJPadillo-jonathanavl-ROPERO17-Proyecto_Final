@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Review, Event
+from api.models import db, User, Review, Event, Post, Comment
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
@@ -222,6 +222,125 @@ def delete_event(event_id):
     db.session.delete(event)
     db.session.commit()
     return jsonify({"message": "Event deleted successfully"}), 200
+
+# Obtener todos los Post
+@api.route('/posts', methods=['GET'])
+def get_all_posts():
+    posts = Post.query.all()
+    return jsonify([post.serialize() for post in posts]), 200
+
+# Obtener un Post en específico
+@api.route('/posts/<int:post_id>', methods=['GET'])
+def get_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return jsonify(post.serialize()), 200
+
+@api.route('/posts', methods=['POST'])
+@jwt_required()
+def create_post():
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    new_post = Post(
+        title=data['title'],
+        content=data['content'],
+        image_url=data.get('image_url'),
+        user_id=current_user_id
+    )
+    db.session.add(new_post)
+    db.session.commit()
+
+    return jsonify(new_post.serialize()), 201
+
+@api.route('/posts/<int:post_id>', methods=['PUT'])
+@jwt_required()
+def update_post(post_id):
+    current_user_id = get_jwt_identity()
+    post = Post.query.get_or_404(post_id)
+
+    if post.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    post.title = data.get('title', post.title)
+    post.content = data.get('content', post.content)
+    post.image_url = data.get('image_url', post.image_url)
+
+    db.session.commit()
+
+    return jsonify(post.serialize()), 200
+
+@api.route('/posts/<int:post_id>', methods=['DELETE'])
+@jwt_required()
+def delete_post(post_id):
+    current_user_id = get_jwt_identity()
+    post = Post.query.get_or_404(post_id)
+
+    if post.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+    db.session.delete(post)
+    db.session.commit()
+
+    return jsonify({"message": "Post deleted successfully"}), 200
+
+@api.route('/posts/<int:post_id>/comments', methods=['POST'])
+@jwt_required()
+def create_comment(post_id):
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+
+    new_comment = Comment(
+        content=data['content'],
+        user_id=current_user_id,
+        post_id=post_id
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+
+    return jsonify(new_comment.serialize()), 201
+
+# Obtener todos los comentarios
+@api.route('/posts/<int:post_id>/comments', methods=['GET'])
+def get_comments_by_post(post_id):
+    comments = Comment.query.filter_by(post_id=post_id).all()
+    return jsonify([comment.serialize() for comment in comments]), 200
+
+# Obtener un comentario en especifico
+@api.route('/comments/<int:comment_id>', methods=['GET'])
+def get_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    return jsonify(comment.serialize()), 200
+
+# Ruta para actualizar un Comment existente
+@api.route('/comments/<int:comment_id>', methods=['PUT'])
+@jwt_required()
+def update_comment(comment_id):
+    current_user_id = get_jwt_identity()
+    comment = Comment.query.get_or_404(comment_id)
+
+    if comment.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    comment.content = data.get('content', comment.content)
+
+    db.session.commit()
+
+    return jsonify(comment.serialize()), 200
+
+# Ruta para eliminar un Comment existente
+@api.route('/comments/<int:comment_id>', methods=['DELETE'])
+@jwt_required()
+def delete_comment(comment_id):
+    current_user_id = get_jwt_identity()
+    comment = Comment.query.get_or_404(comment_id)
+
+    if comment.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    db.session.delete(comment)
+    db.session.commit()
+
+    return jsonify({"message": "Comment deleted successfully"}), 200
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
