@@ -1,17 +1,16 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-from flask import Flask, request, jsonify, url_for, Blueprint
+from flask import Flask, request, jsonify, url_for, Blueprint, make_response
 from api.models import db, User, Review, Event, Post, Comment
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, verify_jwt_in_request
 
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
-CORS(api)
+CORS(api, supports_credentials=True)
 
 @api.route("/login", methods=["POST"])
 def login():
@@ -35,6 +34,13 @@ def login():
     # Devuelve el token de acceso como respuesta JSON
     return jsonify(access_token=access_token)
 
+@api.route("/logout", methods=["POST"])
+def logout():
+    # Elimina la cookie que contiene el token
+    response = make_response(jsonify({"msg": "Logout exitoso"}))
+    response.delete_cookie('access_token_cookie')
+    return response
+
 @api.route('/signup', methods=['POST'])
 def create_user():
     # Obtiene los datos del cuerpo de la solicitud JSON
@@ -49,40 +55,36 @@ def create_user():
     return jsonify({"user": new_user.serialize()}), 200
 
 @api.route("/current-user", methods=["GET"])
-@jwt_required()  # Requiere que el usuario esté autenticado con JWT
 def get_current_user():
-    # Obtiene la identidad del usuario actual desde el token JWT
-    current_user_id = get_jwt_identity()
-    # Verifica si no se encontró la identidad del usuario
-    if current_user_id is None:
-        return jsonify({"msg": "Usuario no encontrado"}), 401
-    # Busca al usuario en la base de datos usando su id
-    user_query = User.query.get(current_user_id)
-    # Si no se encuentra el usuario, devuelve un mensaje de error
-    if user_query is None:
-        return jsonify({"msg": "Usuario no encontrado"}), 401
-    # Serializa los datos del usuario para enviarlos como JSON
-    print(user_query)
-    user = user_query.serialize()
-    print(user)
-    # Devuelve los datos del usuario actual como respuesta JSON
-    return jsonify(current_user=user), 200
+    # Intentamos verificar el JWT en la cookie
+    try:
+        verify_jwt_in_request()
+        current_user_id = get_jwt_identity()
+        if current_user_id is None:
+            return jsonify({"msg": "Usuario no encontrado"}), 401
+        user_query = User.query.get(current_user_id)
+        if user_query is None:
+            return jsonify({"msg": "Usuario no encontrado"}), 401
+        return jsonify(current_user=user_query.serialize()), 200
+    except Exception as e:
+        return jsonify({"msg": "Token inválido o inexistente", "error": str(e)}), 401
 
 @api.route('/reviews', methods=['GET'])
-@jwt_required()
 def get_current_user_reviews():
-    current_user_id = get_jwt_identity()
-    # Verifica si no se encontró la identidad del usuario
-    if current_user_id is None:
-        return jsonify({"msg": "Usuario no encontrado"}), 401
-    # Busca al usuario en la base de datos usando su id
-    user_query = User.query.get(current_user_id)
-    # Si no se encuentra el usuario, devuelve un mensaje de error
-    if user_query is None:
-        return jsonify({"msg": "Usuario no encontrado"}), 401
-    reviews_query = Review.query.filter_by(user_id=current_user_id) 
-    reviews = reviews_query.all()
-    return jsonify([review.serialize() for review in reviews])
+    try:
+        verify_jwt_in_request()
+        current_user_id = get_jwt_identity()
+        if current_user_id is None:
+            return jsonify({"msg": "Usuario no encontrado"}), 401
+        user_query = User.query.get(current_user_id)
+        if user_query is None:
+            return jsonify({"msg": "Usuario no encontrado"}), 401
+        reviews_query = Review.query.filter_by(user_id=current_user_id) 
+        reviews = reviews_query.all()
+        return jsonify([review.serialize() for review in reviews])
+    except Exception as e:
+        return jsonify({"msg": "Token inválido o inexistente", "error": str(e)}), 401
+
 
 @api.route('/reviews/<int:game_id>', methods=['GET'])
 def get_reviews_by_id(game_id):
@@ -90,32 +92,28 @@ def get_reviews_by_id(game_id):
     return jsonify([review.serialize() for review in reviews])
 
 @api.route('/reviews/<int:game_id>', methods=['POST'])
-@jwt_required()
 def add_review(game_id):
-    # Obtiene la identidad del usuario actual desde el token JWT
+    try:
+        verify_jwt_in_request()
+    except:
+        return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
-    # Verifica si no se encontró la identidad del usuario
     if current_user_id is None:
         return jsonify({"msg": "Usuario no encontrado"}), 401
-    # Busca al usuario en la base de datos usando su id
     user_query = User.query.get(current_user_id)
-    # Si no se encuentra el usuario, devuelve un mensaje de error
     if user_query is None:
         return jsonify({"msg": "Usuario no encontrado"}), 401
     data = request.json
-    # Asegurarse de que recibí la información completa
     if 'title' not in data:
         return jsonify({"error": "title is required"}), 400
     if 'comment' not in data:
         return jsonify({"error": "comment is required"}), 400
     new_review = Review(
-        # user_id=current_user_id,
         game_id=game_id,
         title=data['title'],
         comment=data['comment']
     )
     user_query.reviews.append(new_review)
-    # db.session.add(new_review)
     db.session.commit()
     return jsonify(new_review.serialize()), 201
 
@@ -143,22 +141,21 @@ def update_review(review_id):
     return jsonify(review.serialize()), 200
 
 @api.route('/update-avatar', methods=['PUT'])
-@jwt_required()
 def update_avatar():
+    try:
+        verify_jwt_in_request()
+    except:
+        return jsonify({"msg": "Unauthorized"}), 401
     user_id = get_jwt_identity()
     data = request.get_json()
     new_avatar_url = data.get('avatar')
-    # Verificar si se proporciona una nueva imagen
     if not new_avatar_url:
         return jsonify({"msg": "No image URL provided"}), 400
-    # Buscar al usuario en la base de datos
     user = User.query.get(user_id)
     if not user:
         return jsonify({"msg": "User not found"}), 404
-    # Actualizar la imagen de perfil del usuario
     user.profile_image = new_avatar_url
     db.session.commit()
-    # Serializar y devolver la información actualizada del usuario
     return jsonify(user.serialize()), 200
 
 @api.route('/users', methods=['GET'])
@@ -171,9 +168,6 @@ def get_users():
 def get_events():
     events = Event.query.all()
     result = [event.serialize() for event in events]
-    # print('\n\n\n*******************************')
-    # print(result)
-    # print('\n*******************************\n\n\n')
     return jsonify(result)
 
 @api.route('/events', methods=['POST'])
@@ -190,17 +184,19 @@ def add_event():
     return jsonify(new_event.serialize()), 201
 
 @api.route('/events/<int:event_id>/attend', methods=['POST'])
-@jwt_required()
 def attend_event(event_id):
-    current_user_id = get_jwt_identity()
-    event = Event.query.get_or_404(event_id)
-    user = User.query.get(current_user_id)
-    if user in event.attendees:
-        return jsonify({"message": "Ya estás registrado en este evento"}), 400
-    event.attendees.append(user)
-    db.session.commit()
-
-    return jsonify({"message": "Asistencia registrada"}), 200
+    try:
+        verify_jwt_in_request()
+        current_user_id = get_jwt_identity()
+        event = Event.query.get_or_404(event_id)
+        user = User.query.get(current_user_id)
+        if user in event.attendees:
+            return jsonify({"message": "Ya estás registrado en este evento"}), 400
+        event.attendees.append(user)
+        db.session.commit()
+        return jsonify({"message": "Asistencia registrada"}), 200
+    except Exception as e:
+        return jsonify({"msg": "Token inválido o inexistente", "error": str(e)}), 401
 
 @api.route('/events/<int:event_id>', methods=['PUT'])
 def update_event(event_id):
@@ -236,8 +232,11 @@ def get_post(post_id):
     return jsonify(post.serialize()), 200
 
 @api.route('/posts', methods=['POST'])
-@jwt_required()
 def create_post():
+    try:
+        verify_jwt_in_request()
+    except:
+        return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
     data = request.get_json()
     new_post = Post(
@@ -248,46 +247,48 @@ def create_post():
     )
     db.session.add(new_post)
     db.session.commit()
-
     return jsonify(new_post.serialize()), 201
 
 @api.route('/posts/<int:post_id>', methods=['PUT'])
-@jwt_required()
 def update_post(post_id):
+    try:
+        verify_jwt_in_request()
+    except:
+        return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
     post = Post.query.get_or_404(post_id)
 
     if post.user_id != current_user_id:
         return jsonify({"error": "Unauthorized"}), 403
-
     data = request.get_json()
     post.title = data.get('title', post.title)
     post.content = data.get('content', post.content)
     post.image_url = data.get('image_url', post.image_url)
-
     db.session.commit()
-
     return jsonify(post.serialize()), 200
 
 @api.route('/posts/<int:post_id>', methods=['DELETE'])
-@jwt_required()
 def delete_post(post_id):
+    try:
+        verify_jwt_in_request()
+    except:
+        return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
     post = Post.query.get_or_404(post_id)
-
     if post.user_id != current_user_id:
         return jsonify({"error": "Unauthorized"}), 403
     db.session.delete(post)
     db.session.commit()
-
     return jsonify({"message": "Post deleted successfully"}), 200
 
 @api.route('/posts/<int:post_id>/comments', methods=['POST'])
-@jwt_required()
 def create_comment(post_id):
+    try:
+        verify_jwt_in_request()
+    except:
+        return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
     data = request.get_json()
-
     new_comment = Comment(
         content=data['content'],
         user_id=current_user_id,
@@ -295,7 +296,6 @@ def create_comment(post_id):
     )
     db.session.add(new_comment)
     db.session.commit()
-
     return jsonify(new_comment.serialize()), 201
 
 # Obtener todos los comentarios
@@ -312,34 +312,33 @@ def get_comment(comment_id):
 
 # Ruta para actualizar un Comment existente
 @api.route('/comments/<int:comment_id>', methods=['PUT'])
-@jwt_required()
 def update_comment(comment_id):
+    try:
+        verify_jwt_in_request()
+    except:
+        return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
     comment = Comment.query.get_or_404(comment_id)
-
     if comment.user_id != current_user_id:
         return jsonify({"error": "Unauthorized"}), 403
-
     data = request.get_json()
     comment.content = data.get('content', comment.content)
-
     db.session.commit()
-
     return jsonify(comment.serialize()), 200
 
 # Ruta para eliminar un Comment existente
 @api.route('/comments/<int:comment_id>', methods=['DELETE'])
-@jwt_required()
 def delete_comment(comment_id):
+    try:
+        verify_jwt_in_request()
+    except:
+        return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
     comment = Comment.query.get_or_404(comment_id)
-
     if comment.user_id != current_user_id:
         return jsonify({"error": "Unauthorized"}), 403
-
     db.session.delete(comment)
     db.session.commit()
-
     return jsonify({"message": "Comment deleted successfully"}), 200
 
 @api.route('/hello', methods=['POST', 'GET'])
