@@ -14,6 +14,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 			gameDetails: null, // Aquí almacenamos los detalles del juego seleccionado
 			searchResults: [],
 			reviews: [],
+			events:[],
+			posts: [],
+			comments: [],
 		},
 		actions: {
 			login: async (email, password) => {
@@ -416,7 +419,17 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error al eliminar el post');
 				}
 			},
-			
+			getAllPost: async () => {
+				try{
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/posts`);
+					if (response.status === 200){
+						console.log("Posts obtenidos correctamente:", response.data);
+                        setStore({posts: response.data});
+					}
+				} catch (error){
+					console.error("Error al obtener los posts:", error);
+				}
+			},
 			
 			createComment: async (postId, content) => {
 				const token = localStorage.getItem('token');
@@ -468,7 +481,17 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error al eliminar el comentario');
 				}
 			},
-			
+			getAllComments: async () => {
+				try{
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/comments`);
+					if(response.status === 200){
+						console.log("Comentarios obtenidos correctamente:", response.data);
+						setStore({comments: response.data})
+					}
+				}catch (error){
+					console.error("Error al obtener los comentarios:", error);
+				}
+			},
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try {
