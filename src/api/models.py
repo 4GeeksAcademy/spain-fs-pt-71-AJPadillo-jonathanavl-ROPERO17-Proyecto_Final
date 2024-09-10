@@ -26,7 +26,19 @@ class User(db.Model):
             "is_active": self.is_active,
             "profile_image": self.profile_image,
             "preferred_genres": self.preferred_genres,
-            "events": [event.serialize() for event in self.events],
+            "events": [event.base_serialize() for event in self.events],
+            "reviews": [review.serialize() for review in self.reviews],
+            "posts": [post.serialize() for post in self.posts]
+        }
+
+    def base_serialize(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "username": self.username,
+            "is_active": self.is_active,
+            "profile_image": self.profile_image,
+            "preferred_genres": self.preferred_genres,
             "reviews": [review.serialize() for review in self.reviews],
             "posts": [post.serialize() for post in self.posts]
         }
@@ -59,7 +71,7 @@ class Event(db.Model):
     name = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
-    # Relación muchos a muchos con usuarios
+    image_url = db.Column(db.String(255))  # Columna opcional para la URL de la imagen
     attendees = db.relationship('User', secondary='user_events', back_populates='events')
 
     def __repr__(self):
@@ -71,7 +83,17 @@ class Event(db.Model):
             "name": self.name,
             "description": self.description,
             "date": self.date,
-            "attendees": [user.serialize() for user in self.attendees]
+            "image_url": self.image_url,  # Incluye la URL de la imagen en la serialización
+            "attendees": [user.base_serialize() for user in self.attendees]
+        }
+    
+    def base_serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "date": self.date,
+            "image_url": self.image_url  # Incluye la URL de la imagen también en la serialización base
         }
 
 # Tabla de asociación para la relación muchos a muchos entre User y Event

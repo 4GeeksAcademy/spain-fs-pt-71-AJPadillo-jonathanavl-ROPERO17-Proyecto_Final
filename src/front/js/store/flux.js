@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
@@ -16,7 +17,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			reviews: [],
 			events:[],
 			posts: [],
-			comments: [],
+			comments: []
 		},
 		actions: {
 			login: async (email, password) => {
@@ -24,7 +25,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const response = await axios.post(`${process.env.BACKEND_URL}/api/login`, { email, password });
 					const { access_token } = response.data;
 					if (access_token) {
-						localStorage.setItem("accessToken", access_token);
+						// Guardar token en una cookie
+						Cookies.set('accessToken', access_token, { expires: 7 }); // La cookie expirará en 7 días
 						await getActions().getCurrentUser();
 						console.log("Login successful");
 						console.log("Token:", access_token);
@@ -38,7 +40,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			logout: () => {
-				localStorage.removeItem("accessToken");
+				// Eliminar la cookie del token
+				Cookies.remove('accessToken');
 				setStore({
 					currentUser: null,
 					isLoggedIn: false,
@@ -58,7 +61,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			getCurrentUser: async () => {
 				try {
-					const accessToken = localStorage.getItem("accessToken");
+					const accessToken = Cookies.get('accessToken'); // Obtener token de la cookie
+					if (!accessToken) throw new Error("No token found");
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/current-user`, {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -67,7 +71,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					setStore({ currentUser: response.data.current_user, isLoggedIn: true, isLoadingUser: false });
 				} catch (error) {
 					console.error("Error loading current user from backend:", error.response?.data?.message || error.message);
-					localStorage.removeItem("accessToken");
+					Cookies.remove('accessToken'); // Eliminar la cookie si hay error
 					setStore({
 						currentUser: null,
 						isLoggedIn: false,
@@ -96,7 +100,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			updateProfileImage: async (newImage) => {
 				try {
-					const accessToken = localStorage.getItem("accessToken");
+					const accessToken = Cookies.get('accessToken');
 					const response = await axios.put(`${process.env.BACKEND_URL}/api/update-avatar`, { avatar: newImage }, {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -172,7 +176,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 							'Authorization': `Bearer ${token}`
 						}
 					});
-			
 					// Verifica que la respuesta tenga el formato esperado
 					if (response.data && Array.isArray(response.data)) {
 						setStore({
@@ -183,15 +186,15 @@ const getState = ({ getStore, getActions, setStore }) => {
 					} else {
 						throw new Error('Unexpected response format');
 					}
-			
 				} catch (error) {
 					// Mostrar el mensaje de error adecuado
 					console.error("Error fetching reviews:", error.response?.data?.msg || error.message || error.toString());
 				}
 			},
+
 			addReview: async (review) => {
 				try {
-					const accessToken = localStorage.getItem("accessToken");
+					const accessToken = Cookies.get('accessToken');
 					// Asegúrate de que el objeto review contiene todos los campos necesarios
 					const response = await axios.post(`${process.env.BACKEND_URL}/api/reviews/${review.game_id}`, {
 						title: review.title,      // Título de la reseña
@@ -255,12 +258,19 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			// Acción para crear un nuevo evento
+			getEvents: async () => {
+				try {
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/events`);
+					setStore({ events: response.data });
+				} catch (error) {
+					console.error("Error fetching events:", error.response?.data?.message || error.message);
+				}
+			},
+
 			createEvent: async (event) => {
 				try {
 					// Obtiene el token de acceso almacenado en localStorage
-					const accessToken = localStorage.getItem("accessToken");
-
+					const accessToken = Cookies.get('accessToken');
 					// Realiza una solicitud POST a la API para crear un nuevo evento
 					const response = await axios.post(
 						process.env.BACKEND_URL + "/api/events",
@@ -276,18 +286,14 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const store = getStore();
 					setStore({ events: [...store.events, response.data] });
 				} catch (error) {
-					// Si ocurre un error durante la solicitud, lo registra en la consola
 					console.error("Error en createEvent:", error);
 				}
 			},
 
-			// Acción para actualizar un evento existente
 			updateEvent: async (eventId, updatedEvent) => {
 				try {
 					// Obtiene el token de acceso almacenado en localStorage
-					const accessToken = localStorage.getItem("accessToken");
-
-					// Realiza una solicitud PUT a la API para actualizar un evento específico
+					const accessToken = Cookies.get('accessToken');
 					const response = await axios.put(
 						`${process.env.BACKEND_URL}/api/events/${eventId}`,
 						updatedEvent,
@@ -308,11 +314,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			// Acción para eliminar un evento existente
 			deleteEvent: async (eventId) => {
 				try {
 					// Obtiene el token de acceso almacenado en localStorage
-					const accessToken = localStorage.getItem("accessToken");
+					const accessToken = Cookies.get('accessToken');
 
 					// Realiza una solicitud DELETE a la API para eliminar un evento específico
 					await axios.delete(`${process.env.BACKEND_URL}/api/events/${eventId}`, {
@@ -330,12 +335,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			// Acción para registrar la asistencia a un evento
 			attendEvent: async (eventId) => {
 				try {
 					// Obtiene el token de acceso almacenado en localStorage
-					const accessToken = localStorage.getItem("accessToken");
-
+					const accessToken = Cookies.get('accessToken');
 					// Verifica si el usuario está autenticado
 					if (!accessToken) {
 						console.error("Debes estar registrado para asistir a un evento.");
@@ -343,18 +346,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 						window.location.href = "/login";
 						return;
 					}
-
-					// Realiza una solicitud POST a la API para registrar la asistencia a un evento específico
 					await axios.post(`${process.env.BACKEND_URL}/api/events/${eventId}/attend`, null, {
 						headers: {
 							"Authorization": `Bearer ${accessToken}` // Añade el token de autenticación en la cabecera
 						}
 					});
-
-					// Si la respuesta es exitosa, registra un mensaje de éxito en la consola
 					console.log("Asistencia registrada correctamente");
 				} catch (error) {
-					// Si ocurre un error durante la solicitud, lo registra en la consola
 					console.error("Error en attendEvent:", error);
 				}
 			},

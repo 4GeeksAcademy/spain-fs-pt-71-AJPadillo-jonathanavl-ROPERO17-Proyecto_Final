@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Container, Row, Col, Card, Image, Button, Modal } from 'react-bootstrap';
 import { Context } from '../store/appContext';
-import './ProfilePage.css';
+import "../../styles/ProfilePage.css";
 
 export const ProfilePage = () => {
     const { store, actions } = useContext(Context);
@@ -30,22 +30,21 @@ export const ProfilePage = () => {
                 window.location.href = '/login';
             } else {
                 try {
-                    const storedImage = localStorage.getItem('profileImage'); 
+                    const storedImage = localStorage.getItem('profileImage');
                     if (storedImage) {
                         setSelectedImage(storedImage);
                     } else {
                         const user = await actions.getCurrentUser();
-                        if (user && user.profile_image) {
-                            setSelectedImage(user.profile_image);
-                        } else {
-                            setSelectedImage('https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
+                        if (user) {
+                            setSelectedImage(user.profile_image || 'https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
                         }
+                        // No need to fetch events separately; they are included in the user data
                     }
 
-                    // Llama a fetchReviews después de cargar los datos del usuario
+                    // Fetch reviews after loading user data
                     await actions.fetchReviews();
                 } catch (error) {
-                    console.error('Error al obtener la información del usuario:', error);
+                    console.error('Error fetching user data:', error);
                 }
             }
         };
@@ -53,14 +52,7 @@ export const ProfilePage = () => {
         if (!isLoadingUser) {
             fetchUserData();
         }
-    }, [isLoadingUser, isLoggedIn]);
-
-    const events = [
-        'Gran torneo de Fortnite 2024',
-        'Evento de Apex Legends: La batalla definitiva',
-        'Maratón de League of Legends',
-        'Torneo de Counter-Strike: Global Offensive'
-    ];
+    }, [isLoadingUser, isLoggedIn, actions]);
 
     const posts = [
         '¿Alguien sabe cómo derrotar a Nameless King en Dark Souls III?',
@@ -70,12 +62,13 @@ export const ProfilePage = () => {
     ];
 
     if (!currentUser) {
-        return null
+        return null;
     }
 
     const preferences = currentUser?.preferred_genres ? currentUser.preferred_genres.split(',') : [];
-    
-    // Determinar las reseñas a mostrar según el estado de showAllReviews
+    const events = currentUser?.events || [];
+
+    // Determine reviews to show based on the showAllReviews state
     const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 6);
 
     return (
@@ -117,11 +110,15 @@ export const ProfilePage = () => {
                             <Card.Body>
                                 <Card.Title>Eventos</Card.Title>
                                 <Card.Text>
-                                    {events.map((event, index) => (
-                                        <div key={index} className="event-item">
-                                            {event}
-                                        </div>
-                                    ))}
+                                    {events.length > 0 ? (
+                                        events.map((event, index) => (
+                                            <div key={index} className="event-item">
+                                                {event.name} - {event.date} {/* Adjust according to your event structure */}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>No hay eventos disponibles.</p>
+                                    )}
                                 </Card.Text>
                                 <a href="#" className="card-link">Ver todos los eventos</a>
                             </Card.Body>

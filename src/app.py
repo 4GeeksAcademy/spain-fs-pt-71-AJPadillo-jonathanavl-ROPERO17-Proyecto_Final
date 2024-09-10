@@ -14,7 +14,7 @@ from flask_jwt_extended import JWTManager
 app = Flask(__name__)
 
 # Configuración de CORS
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # Configuración de la base de datos
 db_url = os.getenv("DATABASE_URL")
