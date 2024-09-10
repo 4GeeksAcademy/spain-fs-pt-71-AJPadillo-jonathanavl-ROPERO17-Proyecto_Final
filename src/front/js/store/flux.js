@@ -419,6 +419,19 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error al eliminar el post');
 				}
 			},
+			getPostById: async (postId) => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/posts/${postId}`);
+					if (response.ok) {
+						const post = await response.json();
+						setStore({ currentPost: post });  // Guardar el post actual en el estado
+					} else {
+						console.error("Error al cargar el post");
+					}
+				} catch (error) {
+					console.error("Error en getPostById:", error);
+				}
+			},
 			getAllPost: async () => {
 				try{
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/posts`);
@@ -447,8 +460,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} else {
 					console.error('Error al crear el comentario');
 				}
-			},
-			
+			},	
 			updateComment: async (commentId, content) => {
 				const token = localStorage.getItem('token');
 				const resp = await fetch(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
@@ -466,7 +478,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error al actualizar el comentario');
 				}
 			},
-			
 			deleteComment: async (commentId) => {
 				const token = localStorage.getItem('token');
 				const resp = await fetch(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
@@ -479,6 +490,19 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.log('Comentario eliminado');
 				} else {
 					console.error('Error al eliminar el comentario');
+				}
+			},
+			getCommentById: async (commentId) => {
+				try {
+					const response = await fetch(`${process.env.BACKEND_URL}/api/comments/${commentId}`);
+					if (response.ok) {
+						const comment = await response.json();
+						setStore({ currentComment: comment });  // Guardar el comentario actual en el estado
+					} else {
+						console.error("Error al cargar el comentario");
+					}
+				} catch (error) {
+					console.error("Error en getCommentById:", error);
 				}
 			},
 			getAllComments: async () => {
