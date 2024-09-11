@@ -3,6 +3,7 @@ import { Button, Modal, Form, ListGroup, Card, Container, Row, Col } from 'react
 import { Context } from '../store/appContext'; // Ajusta la ruta según la ubicación de tu Context
 import { FaEdit, FaTimes, FaPaperPlane } from 'react-icons/fa'; // Importa los íconos necesarios
 import './PostPage.css'; // Importa el archivo de estilos
+import io from 'socket.io-client';
 
 export const PostPage = () => {
     const { store, actions } = useContext(Context);
@@ -14,8 +15,18 @@ export const PostPage = () => {
     const [selectedPostId, setSelectedPostId] = useState(null);
 
     useEffect(() => {
-        actions.getAllPost(); // Obtiene todos los posts al cargar la página
-        actions.getAllComments(); // Obtiene todos los comentarios al cargar la página
+        const socket = io(process.env.BACKEND_URL);
+        socket.on('new_post', (newPost) => {
+            console.log('Nuevo post recibido:', newPost);
+            setPosts(prevPosts => [newPost, ...prevPosts]);
+        });
+
+        actions.getAllPost();
+        actions.getAllComments();
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     const handlePostModalOpen = () => setShowPostModal(true);
@@ -26,14 +37,18 @@ export const PostPage = () => {
     };
 
     const handleCreatePost = async () => {
-        if (isEditing && currentPost) {
-            await actions.updatePost(currentPost.id, newPost.title, newPost.content, newPost.imageUrl);
-        } else {
-            await actions.createPost(newPost.title, newPost.content, newPost.imageUrl);
+        try {
+            if (isEditing && currentPost) {
+                await actions.updatePost(currentPost.id, newPost.title, newPost.content, newPost.imageUrl);
+            } else {
+                await actions.createPost(newPost.title, newPost.content, newPost.imageUrl);
+            }
+            await actions.getAllPost(); // Actualiza la lista de posts después de crear o editar
+            handlePostModalClose();
+        } catch (error) {
+            console.error("Error al crear el post:", error.response || error.message);
         }
-        await actions.getAllPost(); // Actualiza la lista de posts después de crear o editar
-        handlePostModalClose();
-    };
+    };    
 
     const handleEditPost = (post) => {
         setCurrentPost(post);
@@ -48,13 +63,13 @@ export const PostPage = () => {
 
     const handleDeletePost = async (postId) => {
         await actions.deletePost(postId);
-        await actions.getAllPost(); // Actualiza la lista de posts después de eliminar
+        await actions.getAllPost();
     };
 
     const handleCreateComment = async (postId) => {
         if (newComment.trim()) {
             await actions.createComment(postId, newComment);
-            await actions.getAllComments(); // Actualiza la lista de comentarios después de crear
+            await actions.getAllComments();
             setNewComment('');
         }
     };

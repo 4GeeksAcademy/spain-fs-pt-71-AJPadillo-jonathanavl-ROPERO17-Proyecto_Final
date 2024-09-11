@@ -6,6 +6,7 @@ from api.models import db, User, Review, Event, Post, Comment
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, verify_jwt_in_request
+from flask_socketio import emit
 
 api = Blueprint('api', __name__)
 
@@ -235,19 +236,23 @@ def get_post(post_id):
 def create_post():
     try:
         verify_jwt_in_request()
-    except:
-        return jsonify({"msg": "Unauthorized"}), 401
-    current_user_id = get_jwt_identity()
-    data = request.get_json()
-    new_post = Post(
-        title=data['title'],
-        content=data['content'],
-        image_url=data.get('image_url'),
-        user_id=current_user_id
-    )
-    db.session.add(new_post)
-    db.session.commit()
-    return jsonify(new_post.serialize()), 201
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        new_post = Post(
+            title=data['title'],
+            content=data['content'],
+            image_url=data.get('image_url'),
+            user_id=current_user_id
+        )
+        db.session.add(new_post)
+        db.session.commit()
+        # Emitir el nuevo post a todos los clientes
+        post_data = new_post.serialize()
+        emit('new_post', post_data, broadcast=True)
+        return jsonify(post_data), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": str(e)}), 500
 
 @api.route('/posts/<int:post_id>', methods=['PUT'])
 def update_post(post_id):
