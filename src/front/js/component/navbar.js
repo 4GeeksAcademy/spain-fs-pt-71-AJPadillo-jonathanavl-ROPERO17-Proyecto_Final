@@ -55,7 +55,7 @@ export const Navbar = () => {
 
                 <div className="d-flex align-items-center">
                     <Link to="/" className="nav-link text-black mx-2">Home</Link>
-                    <Link to="/foro" className="nav-link text-black mx-2">Forum</Link>
+                    <Link to="/post" className="nav-link text-black mx-2">Forum</Link>
                     <Link to="/events" className="nav-link text-black mx-2">Events</Link>
                     <SearchBar />
                 </div>

@@ -1,14 +1,23 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Container, Row, Col, Card, Image, Button, Modal } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import { Context } from '../store/appContext';
+import { ProfileHeader } from '../component/profilepage/ProfileHeader';
+import { ProfilePreferences } from '../component/profilepage/ProfilePreferences';
+import { ProfileEvents } from '../component/profilepage/ProfileEvents';
+import { ProfilePosts } from '../component/profilepage/ProfilePosts';
+import { ProfileReviews } from '../component/profilepage/ProfileReviews';
+import { ProfileImageModal } from '../component/profilepage/ProfileImageModal';
 import "../../styles/ProfilePage.css";
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
 export const ProfilePage = () => {
     const { store, actions } = useContext(Context);
     const { currentUser, isLoggedIn, isLoadingUser, reviews } = store;
     const [showModal, setShowModal] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(currentUser?.profile_image || '');
-    const [showAllReviews, setShowAllReviews] = useState(false);
+    const [selectedImage, setSelectedImage] = useState('');
+
+    const navigate = useNavigate(); // Hook para redirección
 
     const profileImages = [
         'https://img.freepik.com/free-vector/cute-ninja-gaming-cartoon-vector-icon-illustration-people-technology-icon-concept-isolated-flat_138676-8079.jpg',
@@ -20,25 +29,29 @@ export const ProfilePage = () => {
     const handleImageSelect = (imageUrl) => {
         setSelectedImage(imageUrl);
         setShowModal(false);
-        localStorage.setItem('profileImage', imageUrl);
+        Cookies.set('profileImage', imageUrl, { expires: 7 });
         actions.updateProfileImage(imageUrl);
     };
 
     useEffect(() => {
         const fetchUserData = async () => {
             if (!isLoggedIn) {
-                window.location.href = '/login';
+                navigate('/login'); // Redirige usando el hook useNavigate
             } else {
                 try {
-                    const storedImage = localStorage.getItem('profileImage');
+                    // Verifica si hay una imagen en las cookies
+                    const storedImage = Cookies.get('profileImage');
                     if (storedImage) {
                         setSelectedImage(storedImage);
+                    } else if (currentUser && currentUser.profile_image) {
+                        setSelectedImage(currentUser.profile_image);
                     } else {
-                        const user = await actions.getCurrentUser();
-                        if (user) {
-                            setSelectedImage(user.profile_image || 'https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
-                        }
-                        // No need to fetch events separately; they are included in the user data
+                        setSelectedImage('https://cdn.icon-icons.com/icons2/3217/PNG/512/unknown_user_avatar_profile_person_icon_196532.png');
+                    }
+
+                    // Si el usuario no está cargado, obtén los datos del usuario
+                    if (!currentUser) {
+                        await actions.getCurrentUser();
                     }
 
                     // Fetch reviews after loading user data
@@ -52,7 +65,7 @@ export const ProfilePage = () => {
         if (!isLoadingUser) {
             fetchUserData();
         }
-    }, [isLoadingUser, isLoggedIn, actions]);
+    }, [isLoadingUser, isLoggedIn, currentUser, navigate]);
 
     const posts = [
         '¿Alguien sabe cómo derrotar a Nameless King en Dark Souls III?',
@@ -67,134 +80,38 @@ export const ProfilePage = () => {
 
     const preferences = currentUser?.preferred_genres ? currentUser.preferred_genres.split(',') : [];
     const events = currentUser?.events || [];
-
-    // Determine reviews to show based on the showAllReviews state
-    const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 6);
+    const displayedReviews = reviews.slice(0, 6);
 
     return (
         <Container className="profile-container">
             <Row className="profile-row">
                 <Col md={4} className="profile-left">
-                    <Card className="profile-card">
-                        <Card.Body>
-                            <Image
-                                src={selectedImage}
-                                roundedCircle
-                                alt="Avatar"
-                                className="avatar-img"
-                            />
-                            <div className="my-profile-status">
-                                <h3 className="my-profile">My Profile</h3>
-                                <Button variant="primary" className="circle-button" onClick={() => setShowModal(true)}>
-                                    <img src="https://www.svgrepo.com/show/345041/pencil-square.svg" alt="Edit" className="pencil-icon" />
-                                </Button>
-                            </div>
-                            <div className="user-info">
-                                <div className="user-name-more-data">
-                                    <p className="user-name">@{currentUser.username || 'TheGhostGamer'}</p>
-                                </div>
-                                <p className="user-email">{currentUser.email}</p>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                    <Card className="profile-card mt-3">
-                        <Card.Body>
-                            <Card.Title>Preferencias de Géneros</Card.Title>
-                            <Card.Text>{preferences.length > 0 ? preferences.join(', ') : 'No especificado'}</Card.Text>
-                        </Card.Body>
-                    </Card>
+                    <ProfileHeader
+                        user={currentUser}
+                        selectedImage={selectedImage}
+                        onImageClick={() => setShowModal(true)}
+                    />
+                    <ProfilePreferences preferences={preferences} />
                 </Col>
                 <Col md={8} className="profile-right">
                     <div className="profile-content">
-                        <Card className="profile-card content-card">
-                            <Card.Body>
-                                <Card.Title>Eventos</Card.Title>
-                                <Card.Text>
-                                    {events.length > 0 ? (
-                                        events.map((event, index) => (
-                                            <div key={index} className="event-item">
-                                                {event.name} - {event.date} {/* Adjust according to your event structure */}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p>No hay eventos disponibles.</p>
-                                    )}
-                                </Card.Text>
-                                <a href="#" className="card-link">Ver todos los eventos</a>
-                            </Card.Body>
-                        </Card>
-                        <Card className="profile-card content-card mt-3">
-                            <Card.Body>
-                                <Card.Title>Posts Escritos</Card.Title>
-                                <Card.Text>
-                                    {posts.map((post, index) => (
-                                        <div key={index} className="post-item">
-                                            {post}
-                                        </div>
-                                    ))}
-                                </Card.Text>
-                                <a href="#" className="card-link">Ver todos los posts</a>
-                            </Card.Body>
-                        </Card>
-                        <Card className="profile-card content-card mt-3">
-                            <Card.Body>
-                                <Card.Title>Reseñas Escritas</Card.Title>
-                                <div className="review-list">
-                                    {displayedReviews.length > 0 ? (
-                                        displayedReviews.map((review, index) => (
-                                            <div key={index} className="review-item">
-                                                <div className="review-header">
-                                                    <h7>{review.title}</h7>
-                                                    <a href={`https://reimagined-train-7v76qvx6g5563xx6x-3000.app.github.dev/game/${review.game_id}`} 
-                                                       target="_blank" 
-                                                       rel="noopener noreferrer"
-                                                       className="view-review-link">
-                                                       Ver reseña
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p>No hay reseñas disponibles.</p>
-                                    )}
-                                </div>
-                                {reviews.length > 6 && !showAllReviews && (
-                                    <a href="#" className="card-link" onClick={() => setShowAllReviews(true)}>
-                                        Ver todas las reseñas
-                                    </a>
-                                )}
-                                {showAllReviews && reviews.length > 6 && (
-                                    <a href="#" className="card-link" onClick={() => setShowAllReviews(false)}>
-                                        Ocultar reseñas
-                                    </a>
-                                )}
-                            </Card.Body>
-                        </Card>
+                        <ProfileEvents events={events} />
+                        <ProfilePosts posts={posts} />
+                        <ProfileReviews
+                            reviews={displayedReviews}
+                            showAllReviews={false}
+                            onToggleReviews={() => {}}
+                        />
                     </div>
                 </Col>
             </Row>
 
-            {/* Modal to select a profile image */}
-            <Modal show={showModal} onHide={() => setShowModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Selecciona tu nueva imagen de perfil</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="d-flex justify-content-around">
-                        {profileImages.map((image, index) => (
-                            <Image
-                                key={index}
-                                src={image}
-                                roundedCircle
-                                alt={`Avatar ${index + 1}`}
-                                className="avatar-option"
-                                onClick={() => handleImageSelect(image)}
-                                style={{ cursor: 'pointer', width: '80px', height: '80px' }}
-                            />
-                        ))}
-                    </div>
-                </Modal.Body>
-            </Modal>
+            <ProfileImageModal
+                showModal={showModal}
+                onHide={() => setShowModal(false)}
+                profileImages={profileImages}
+                onImageSelect={handleImageSelect}
+            />
         </Container>
     );
 };
