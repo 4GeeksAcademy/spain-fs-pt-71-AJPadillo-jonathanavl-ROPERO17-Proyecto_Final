@@ -481,6 +481,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				try {
 					const response = await fetch(`/api/posts/${postId}/comments`);
 					const data = await response.json();
+					setStore({ comments: data });
 					return data;
 				} catch (error) {
 					console.error('Error fetching comments:', error);
@@ -499,21 +500,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error("Error al cargar el comentario:", error.response?.data?.message || error.message);
 				}
-			},
-			
-			getAllComments: async () => {
-				try {
-					const token = Cookies.get('accessToken');
-					const response = await axios.get(`${process.env.BACKEND_URL}/api/comments`, {
-						headers: {
-							'Authorization': `Bearer ${token}`
-						}
-					});
-					setStore({ comments: response.data });
-				} catch (error) {
-					console.error("Error al obtener los comentarios:", error.response?.data?.message || error.message);
-				}
-			},			
+			},	
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try {
