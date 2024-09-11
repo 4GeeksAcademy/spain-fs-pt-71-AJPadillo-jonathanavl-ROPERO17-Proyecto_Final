@@ -8,6 +8,7 @@ class User(db.Model):
     password = db.Column(db.String(80), unique=False, nullable=False)
     username = db.Column(db.String(20), unique=True, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
+    is_admin = db.Column(db.Boolean(), unique=False, nullable=False, default=False)
     profile_image = db.Column(db.String(255), nullable=True)
     preferred_genres = db.Column(db.String(200))  # Almacena géneros preferidos como una cadena separada por comas
     events = db.relationship('Event', secondary='user_events', back_populates='attendees')
@@ -24,6 +25,7 @@ class User(db.Model):
             "email": self.email,
             "username": self.username,
             "is_active": self.is_active,
+            "is_admin": self.is_admin,
             "profile_image": self.profile_image,
             "preferred_genres": self.preferred_genres,
             "events": [event.base_serialize() for event in self.events],
@@ -37,6 +39,7 @@ class User(db.Model):
             "email": self.email,
             "username": self.username,
             "is_active": self.is_active,
+            "is_admin": self.is_admin,
             "profile_image": self.profile_image,
             "preferred_genres": self.preferred_genres,
             "reviews": [review.serialize() for review in self.reviews],

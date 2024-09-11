@@ -1,6 +1,3 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
 from flask import Flask, request, jsonify, url_for, Blueprint, make_response
 from api.models import db, User, Review, Event, Post, Comment
 from api.utils import generate_sitemap, APIException
@@ -9,54 +6,39 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 
 api = Blueprint('api', __name__)
 
-# Allow CORS requests to this API
 CORS(api, supports_credentials=True)
 
 @api.route("/login", methods=["POST"])
 def login():
-    # Obtiene el email y password del cuerpo de la solicitud JSON. Si no se proporcionan, se establece como None.
     email = request.json.get("email", None)
     password = request.json.get("password", None)
-    # Verifica si el email o password no fueron proporcionados
     if email is None or password is None:
         return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    # Busca al usuario en la base de datos por su email
     user_query = User.query.filter_by(email=email)
-    user = user_query.first()  # Obtiene el primer resultado de la consulta
-    # Si no se encuentra el usuario, devuelve un mensaje de error
+    user = user_query.first()
     if user is None:
         return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    # Verifica que el email y password coincidan con los del usuario en la base de datos
     if user.email != email or user.password != password:
         return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    # Si todo es correcto, crea un token de acceso para el usuario usando su id como identidad
     access_token = create_access_token(identity=user.id)
-    # Devuelve el token de acceso como respuesta JSON
     return jsonify(access_token=access_token)
 
 @api.route("/logout", methods=["POST"])
 def logout():
-    # Elimina la cookie que contiene el token
     response = make_response(jsonify({"msg": "Logout exitoso"}))
     response.delete_cookie('access_token_cookie')
     return response
 
 @api.route('/signup', methods=['POST'])
 def create_user():
-    # Obtiene los datos del cuerpo de la solicitud JSON
     data = request.json
-    # Crea un nuevo usuario con el email y password proporcionados
     new_user = User(username=data['username'], email=data['email'], password=data['password'])
-    # Añade el nuevo usuario a la sesión de la base de datos
     db.session.add(new_user)
-    # Confirma los cambios en la base de datos (guarda el nuevo usuario)
     db.session.commit()
-    # Devuelve los datos del nuevo usuario como respuesta JSON
     return jsonify({"user": new_user.serialize()}), 200
 
 @api.route("/current-user", methods=["GET"])
 def get_current_user():
-    # Intentamos verificar el JWT en la cookie
     try:
         verify_jwt_in_request()
         current_user_id = get_jwt_identity()
@@ -84,7 +66,6 @@ def get_current_user_reviews():
         return jsonify([review.serialize() for review in reviews])
     except Exception as e:
         return jsonify({"msg": "Token inválido o inexistente", "error": str(e)}), 401
-
 
 @api.route('/reviews/<int:game_id>', methods=['GET'])
 def get_reviews_by_id(game_id):
@@ -126,18 +107,13 @@ def delete_review(review_id):
 
 @api.route('/reviews/<int:review_id>', methods=['PUT'])
 def update_review(review_id):
-    # Obtener la reseña existente usando el ID
     review = Review.query.get_or_404(review_id)
-    # Obtener los datos enviados en la solicitud
     data = request.json
-    # Actualizar los campos de la reseña si están presentes en los datos
     if 'title' in data:
         review.comment = data['title']
     if 'comment' in data:
         review.comment = data['comment']
-    # Guardar los cambios en la base de datos
     db.session.commit()
-    # En la respuesta JSON, convierte la instancia del modelo Review en un diccionario de Python.
     return jsonify(review.serialize()), 200
 
 @api.route('/update-avatar', methods=['PUT'])
@@ -176,8 +152,8 @@ def add_event():
     new_event = Event(
         name=data['name'],
         description=data['description'],
-        date=data['date'],  # Asegúrate de que la fecha esté en un formato correcto, como ISO 8601
-        image_url=data.get('image_url')  # Añadir la URL de la imagen
+        date=data['date'],
+        image_url=data.get('image_url')
     )
     db.session.add(new_event)
     db.session.commit()
@@ -205,8 +181,8 @@ def update_event(event_id):
     
     event.name = data.get('name', event.name)
     event.description = data.get('description', event.description)
-    event.date = data.get('date', event.date)  # Nuevamente, asegúrate de que la fecha esté en un formato correcto
-    event.image_url = data.get('image_url', event.image_url)  # Actualizar la URL de la imagen
+    event.date = data.get('date', event.date)
+    event.image_url = data.get('image_url', event.image_url)
     
     db.session.commit()
     return jsonify(event.serialize()), 200
@@ -219,13 +195,11 @@ def delete_event(event_id):
     db.session.commit()
     return jsonify({"message": "Event deleted successfully"}), 200
 
-# Obtener todos los Post
 @api.route('/posts', methods=['GET'])
 def get_all_posts():
     posts = Post.query.all()
     return jsonify([post.serialize() for post in posts]), 200
 
-# Obtener un Post en específico
 @api.route('/posts/<int:post_id>', methods=['GET'])
 def get_post(post_id):
     post = Post.query.get_or_404(post_id)
@@ -235,19 +209,22 @@ def get_post(post_id):
 def create_post():
     try:
         verify_jwt_in_request()
-    except:
-        return jsonify({"msg": "Unauthorized"}), 401
-    current_user_id = get_jwt_identity()
-    data = request.get_json()
-    new_post = Post(
-        title=data['title'],
-        content=data['content'],
-        image_url=data.get('image_url'),
-        user_id=current_user_id
-    )
-    db.session.add(new_post)
-    db.session.commit()
-    return jsonify(new_post.serialize()), 201
+        current_user_id = get_jwt_identity()
+        data = request.get_json()
+        new_post = Post(
+            title=data['title'],
+            content=data['content'],
+            image_url=data.get('image_url'),
+            user_id=current_user_id
+        )
+        db.session.add(new_post)
+        db.session.commit()
+        # Emitir el nuevo post a todos los clientes
+        post_data = new_post.serialize()
+        return jsonify(post_data), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"msg": str(e)}), 500
 
 @api.route('/posts/<int:post_id>', methods=['PUT'])
 def update_post(post_id):
@@ -298,19 +275,16 @@ def create_comment(post_id):
     db.session.commit()
     return jsonify(new_comment.serialize()), 201
 
-# Obtener todos los comentarios
 @api.route('/posts/<int:post_id>/comments', methods=['GET'])
 def get_comments_by_post(post_id):
     comments = Comment.query.filter_by(post_id=post_id).all()
     return jsonify([comment.serialize() for comment in comments]), 200
 
-# Obtener un comentario en especifico
 @api.route('/comments/<int:comment_id>', methods=['GET'])
 def get_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
     return jsonify(comment.serialize()), 200
 
-# Ruta para actualizar un Comment existente
 @api.route('/comments/<int:comment_id>', methods=['PUT'])
 def update_comment(comment_id):
     try:
@@ -326,7 +300,6 @@ def update_comment(comment_id):
     db.session.commit()
     return jsonify(comment.serialize()), 200
 
-# Ruta para eliminar un Comment existente
 @api.route('/comments/<int:comment_id>', methods=['DELETE'])
 def delete_comment(comment_id):
     try:

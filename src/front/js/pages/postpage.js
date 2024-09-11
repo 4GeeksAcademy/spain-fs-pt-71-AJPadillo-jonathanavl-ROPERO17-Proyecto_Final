@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Button, Modal, Form, ListGroup, Card, Container, Row, Col } from 'react-bootstrap';
-import { Context } from '../store/appContext'; // Ajusta la ruta según la ubicación de tu Context
-import { FaEdit, FaTimes, FaPaperPlane } from 'react-icons/fa'; // Importa los íconos necesarios
-import './PostPage.css'; // Importa el archivo de estilos
+import { Context } from '../store/appContext';
+import { FaEdit, FaTimes, FaPaperPlane } from 'react-icons/fa';
+import './PostPage.css';
 
 export const PostPage = () => {
     const { store, actions } = useContext(Context);
@@ -11,11 +11,10 @@ export const PostPage = () => {
     const [currentPost, setCurrentPost] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [newComment, setNewComment] = useState('');
-    const [selectedPostId, setSelectedPostId] = useState(null);
 
     useEffect(() => {
-        actions.getAllPost(); // Obtiene todos los posts al cargar la página
-        actions.getAllComments(); // Obtiene todos los comentarios al cargar la página
+        actions.getAllPost();
+        actions.getAllComments();
     }, []);
 
     const handlePostModalOpen = () => setShowPostModal(true);
@@ -31,7 +30,7 @@ export const PostPage = () => {
         } else {
             await actions.createPost(newPost.title, newPost.content, newPost.imageUrl);
         }
-        await actions.getAllPost(); // Actualiza la lista de posts después de crear o editar
+        await actions.getAllPost();
         handlePostModalClose();
     };
 
@@ -48,13 +47,13 @@ export const PostPage = () => {
 
     const handleDeletePost = async (postId) => {
         await actions.deletePost(postId);
-        await actions.getAllPost(); // Actualiza la lista de posts después de eliminar
+        await actions.getAllPost();
     };
 
     const handleCreateComment = async (postId) => {
         if (newComment.trim()) {
             await actions.createComment(postId, newComment);
-            await actions.getAllComments(); // Actualiza la lista de comentarios después de crear
+            await actions.getAllComments();
             setNewComment('');
         }
     };
