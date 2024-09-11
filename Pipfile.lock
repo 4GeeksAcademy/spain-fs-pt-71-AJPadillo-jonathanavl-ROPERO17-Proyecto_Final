@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f65be78d566ad4248ef6968182908bf0bbf0c68ad3056efc52060b881c52be15"
+            "sha256": "8dd0b521e8c60d758e96a51e41707661798e7ce1605b089948588de6dc1666d4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -40,14 +40,6 @@
             "markers": "python_version >= '3.8'",
             "version": "==4.4.0"
         },
-        "bidict": {
-            "hashes": [
-                "sha256:03069d763bc387bbd20e7d49914e75fc4132a41937fa3405417e1a5a2d006d71",
-                "sha256:5dae8d4d79b552a71cbabc7deb25dfe8ce710b17ff41711e13010ead2abfc3e5"
-            ],
-            "markers": "python_version >= '3.8'",
-            "version": "==0.23.1"
-        },
         "blinker": {
             "hashes": [
                 "sha256:1779309f71bf239144b9399d06ae925637cf6634cf6bd131104184531bf67c01",
@@ -78,22 +70,6 @@
             ],
             "index": "pypi",
             "version": "==1.41.0"
-        },
-        "dnspython": {
-            "hashes": [
-                "sha256:5ef3b9680161f6fa89daf8ad451b5f1a33b18ae8a1c6778cdf4b43f08c0a6e50",
-                "sha256:e8f0f9c23a7b7cb99ded64e6c3a6f3e701d78f50c55e002b839dea7225cff7cc"
-            ],
-            "markers": "python_version >= '3.8'",
-            "version": "==2.6.1"
-        },
-        "eventlet": {
-            "hashes": [
-                "sha256:d227fe76a63d9e6a6cef53beb8ad0b2dc40a5e7737c801f4b474cfae1db07bc5",
-                "sha256:e42d0f73b718e654c223a033b8692d1a94d778a6c1deb6c3d21442746f3f727f"
-            ],
-            "index": "pypi",
-            "version": "==0.36.1"
         },
         "exceptiongroup": {
             "hashes": [
@@ -150,14 +126,6 @@
             ],
             "index": "pypi",
             "version": "==4.0.7"
-        },
-        "flask-socketio": {
-            "hashes": [
-                "sha256:6a35cb9b8c745372c0875e5ac02391688613344e9c441ff75afecc5e2e3d0ce6",
-                "sha256:e57685c2a2360c9e1a1d63083f45f737ce3080415fd735bc4026879e65b427bd"
-            ],
-            "index": "pypi",
-            "version": "==5.3.7"
         },
         "flask-sqlalchemy": {
             "hashes": [
@@ -582,22 +550,6 @@
             "index": "pypi",
             "version": "==1.0.1"
         },
-        "python-engineio": {
-            "hashes": [
-                "sha256:7631cf5563086076611e494c643b3fa93dd3a854634b5488be0bba0ef9b99709",
-                "sha256:f995e702b21f6b9ebde4e2000cd2ad0112ba0e5116ec8d22fe3515e76ba9dddd"
-            ],
-            "markers": "python_version >= '3.6'",
-            "version": "==4.9.1"
-        },
-        "python-socketio": {
-            "hashes": [
-                "sha256:42efaa3e3e0b166fc72a527488a13caaac2cefc76174252486503bd496284945",
-                "sha256:8b0b8ff2964b2957c865835e936310190639c00310a47d77321a594d1665355e"
-            ],
-            "markers": "python_version >= '3.8'",
-            "version": "==5.11.4"
-        },
         "pyyaml": {
             "hashes": [
                 "sha256:01179a4a8559ab5de078078f37e5c1a30d76bb88519906844fd7bdea1b7729ff",
@@ -656,14 +608,6 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==6.0.2"
-        },
-        "simple-websocket": {
-            "hashes": [
-                "sha256:17d2c72f4a2bd85174a97e3e4c88b01c40c3f81b7b648b0cc3ce1305968928c8",
-                "sha256:1d5bf585e415eaa2083e2bcf02a3ecf91f9712e7b3e6b9fa0b461ad04e0837bc"
-            ],
-            "markers": "python_version >= '3.6'",
-            "version": "==1.0.0"
         },
         "six": {
             "hashes": [
@@ -767,14 +711,6 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==3.0.4"
-        },
-        "wsproto": {
-            "hashes": [
-                "sha256:ad565f26ecb92588a3e43bc3d96164de84cd9902482b130d0ddbaa9664a85065",
-                "sha256:b9acddd652b585d75b20477888c56642fdade28bdfd3579aa24a4d2c037dd736"
-            ],
-            "markers": "python_full_version >= '3.7.0'",
-            "version": "==1.2.0"
         },
         "wtforms": {
             "hashes": [
