@@ -170,24 +170,20 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			fetchReviews: async () => {
 				try {
-					const token = localStorage.getItem('accessToken'); // Asegúrate de usar el nombre correcto del token
+					const accessToken = Cookies.get('accessToken');
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/reviews`, {
 						headers: {
-							'Authorization': `Bearer ${token}`
+							'Authorization': `Bearer ${accessToken}`
 						}
 					});
-					// Verifica que la respuesta tenga el formato esperado
 					if (response.data && Array.isArray(response.data)) {
 						setStore({
-							reviews: response.data,
-							currentPage: 1, // Puedes ajustar esto si ya no usas la paginación
-							totalPages: 1  // Puedes ajustar esto si ya no usas la paginación
+							reviews: response.data
 						});
 					} else {
 						throw new Error('Unexpected response format');
 					}
 				} catch (error) {
-					// Mostrar el mensaje de error adecuado
 					console.error("Error fetching reviews:", error.response?.data?.msg || error.message || error.toString());
 				}
 			},
@@ -358,78 +354,71 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			createPost: async (title, content, imageUrl) => {
-				const token = localStorage.getItem('token');
-				const resp = await fetch(process.env.BACKEND_URL + '/api/posts', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify({
-						
-						title: title,
-						content: content,
+				try {
+					const token = Cookies.get('accessToken');
+					const response = await axios.post(`${process.env.BACKEND_URL}/api/posts`, {
+						title,
+						content,
 						image_url: imageUrl
-						
-					})
-				});
-				if (resp.ok) {
-					const data = await resp.json();
-					console.log('Post creado:', data);
-				} else {
-					console.error('Error al crear el post');
+					}, {
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						}
+					});
+					console.log('Post creado:', response.data);
+				} catch (error) {
+					console.error('Error al crear el post:', error.response?.data?.message || error.message);
 				}
-			},
+			},			
 			
 			updatePost: async (postId, title, content, imageUrl) => {
-				const token = localStorage.getItem('token');
-				const resp = await fetch(`${process.env.BACKEND_URL}/api/posts/${postId}`, {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify({
-						title: title,
-						content: content,
+				try {
+					const token = Cookies.get('accessToken');
+					const response = await axios.put(`${process.env.BACKEND_URL}/api/posts/${postId}`, {
+						title,
+						content,
 						image_url: imageUrl
-					})
-				});
-				if (resp.ok) {
-					const data = await resp.json();
-					console.log('Post actualizado:', data);
-				} else {
-					console.error('Error al actualizar el post');
+					}, {
+						headers: {
+							'Authorization': `Bearer ${token}`,
+							'Content-Type': 'application/json'
+						}
+					});
+					console.log('Post actualizado:', response.data);
+				} catch (error) {
+					console.error('Error al actualizar el post:', error.response?.data?.message || error.message);
+				}
+			},			
+			
+			deletePost: async (postId) => {
+				try {
+					const token = Cookies.get('accessToken');
+					const response = await axios.delete(`${process.env.BACKEND_URL}/api/posts/${postId}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					console.log('Post eliminado:', response.data);
+				} catch (error) {
+					console.error('Error al eliminar el post:', error.response?.data?.message || error.message);
 				}
 			},
 			
-			deletePost: async (postId) => {
-				const token = localStorage.getItem('token');
-				const resp = await fetch(`${process.env.BACKEND_URL}/api/posts/${postId}`, {
-					method: 'DELETE',
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				});
-				if (resp.ok) {
-					console.log('Post eliminado');
-				} else {
-					console.error('Error al eliminar el post');
-				}
-			},
 			getPostById: async (postId) => {
 				try {
-					const response = await fetch(`${process.env.BACKEND_URL}/api/posts/${postId}`);
-					if (response.ok) {
-						const post = await response.json();
-						setStore({ currentPost: post });  // Guardar el post actual en el estado
-					} else {
-						console.error("Error al cargar el post");
-					}
+					const token = Cookies.get('accessToken');
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/posts/${postId}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					setStore({ currentPost: response.data });
 				} catch (error) {
-					console.error("Error en getPostById:", error);
+					console.error("Error al cargar el post:", error.response?.data?.message || error.message);
 				}
 			},
+			
 			getAllPost: async () => {
 				try{
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/posts`);
@@ -443,77 +432,88 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 			
 			createComment: async (postId, content) => {
-				const token = localStorage.getItem('token');
-				const resp = await fetch(`${process.env.BACKEND_URL}/api/posts/${postId}/comments`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify({ content: content })
-				});
-				if (resp.ok) {
-					const data = await resp.json();
-					console.log('Comentario creado:', data);
-				} else {
-					console.error('Error al crear el comentario');
+				try {
+					const token = Cookies.get('accessToken');
+					const response = await axios.post(`${process.env.BACKEND_URL}/api/posts/${postId}/comments`, {
+						content
+					}, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					console.log('Comentario creado:', response.data);
+				} catch (error) {
+					console.error('Error al crear el comentario:', error.response?.data?.message || error.message);
 				}
-			},	
+			},			
+			
 			updateComment: async (commentId, content) => {
-				const token = localStorage.getItem('token');
-				const resp = await fetch(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify({ content: content })
-				});
-				if (resp.ok) {
-					const data = await resp.json();
-					console.log('Comentario actualizado:', data);
-				} else {
-					console.error('Error al actualizar el comentario');
+				try {
+					const token = Cookies.get('accessToken');
+					const response = await axios.put(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
+						content
+					}, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					console.log('Comentario actualizado:', response.data);
+				} catch (error) {
+					console.error('Error al actualizar el comentario:', error.response?.data?.message || error.message);
 				}
-			},
+			},			
+			
 			deleteComment: async (commentId) => {
-				const token = localStorage.getItem('token');
-				const resp = await fetch(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
-					method: 'DELETE',
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				});
-				if (resp.ok) {
-					console.log('Comentario eliminado');
-				} else {
-					console.error('Error al eliminar el comentario');
+				try {
+					const token = Cookies.get('accessToken');
+					const response = await axios.delete(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					console.log('Comentario eliminado:', response.data);
+				} catch (error) {
+					console.error('Error al eliminar el comentario:', error.response?.data?.message || error.message);
 				}
 			},
+			
+			getCommentsByPost: async (postId) => {
+				try {
+					const response = await fetch(`/api/posts/${postId}/comments`);
+					const data = await response.json();
+					return data;
+				} catch (error) {
+					console.error('Error fetching comments:', error);
+				}
+			},
+			
 			getCommentById: async (commentId) => {
 				try {
-					const response = await fetch(`${process.env.BACKEND_URL}/api/comments/${commentId}`);
-					if (response.ok) {
-						const comment = await response.json();
-						setStore({ currentComment: comment });  // Guardar el comentario actual en el estado
-					} else {
-						console.error("Error al cargar el comentario");
-					}
+					const token = Cookies.get('accessToken');
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/comments/${commentId}`, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					setStore({ currentComment: response.data });
 				} catch (error) {
-					console.error("Error en getCommentById:", error);
+					console.error("Error al cargar el comentario:", error.response?.data?.message || error.message);
 				}
 			},
+			
 			getAllComments: async () => {
-				try{
-					const response = await axios.get(`${process.env.BACKEND_URL}/api/comments`);
-					if(response.status === 200){
-						console.log("Comentarios obtenidos correctamente:", response.data);
-						setStore({comments: response.data})
-					}
-				}catch (error){
-					console.error("Error al obtener los comentarios:", error);
+				try {
+					const token = Cookies.get('accessToken');
+					const response = await axios.get(`${process.env.BACKEND_URL}/api/comments`, {
+						headers: {
+							'Authorization': `Bearer ${token}`
+						}
+					});
+					setStore({ comments: response.data });
+				} catch (error) {
+					console.error("Error al obtener los comentarios:", error.response?.data?.message || error.message);
 				}
-			},
+			},			
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try {

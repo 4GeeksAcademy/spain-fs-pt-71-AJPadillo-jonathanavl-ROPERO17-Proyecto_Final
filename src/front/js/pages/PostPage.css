@@ -1,0 +1,17 @@
+/* PostPage.css */
+.post-card {
+    position: relative;
+}
+
+.post-card-icons {
+    position: absolute;
+    top: 2.5rem; /* Ajusta la posición para que esté debajo del nombre de usuario */
+    right: 0;
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.post-card-icons button {
+    font-size: 0.75rem; /* Tamaño más pequeño para los íconos */
+}
