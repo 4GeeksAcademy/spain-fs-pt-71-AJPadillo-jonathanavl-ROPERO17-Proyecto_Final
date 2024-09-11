@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Button, Modal, Form, ListGroup, Card, Container, Row, Col } from 'react-bootstrap';
-import { Context } from '../store/appContext'; // Ajusta la ruta según la ubicación de tu Context
-import { FaEdit, FaTimes, FaPaperPlane } from 'react-icons/fa'; // Importa los íconos necesarios
-import './PostPage.css'; // Importa el archivo de estilos
-import io from 'socket.io-client';
+import { Context } from '../store/appContext';
+import { FaEdit, FaTimes, FaPaperPlane } from 'react-icons/fa';
+import './PostPage.css';
 
 export const PostPage = () => {
     const { store, actions } = useContext(Context);
@@ -12,21 +11,10 @@ export const PostPage = () => {
     const [currentPost, setCurrentPost] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [newComment, setNewComment] = useState('');
-    const [selectedPostId, setSelectedPostId] = useState(null);
 
     useEffect(() => {
-        const socket = io(process.env.BACKEND_URL);
-        socket.on('new_post', (newPost) => {
-            console.log('Nuevo post recibido:', newPost);
-            setPosts(prevPosts => [newPost, ...prevPosts]);
-        });
-
         actions.getAllPost();
         actions.getAllComments();
-
-        return () => {
-            socket.disconnect();
-        };
     }, []);
 
     const handlePostModalOpen = () => setShowPostModal(true);
@@ -37,18 +25,14 @@ export const PostPage = () => {
     };
 
     const handleCreatePost = async () => {
-        try {
-            if (isEditing && currentPost) {
-                await actions.updatePost(currentPost.id, newPost.title, newPost.content, newPost.imageUrl);
-            } else {
-                await actions.createPost(newPost.title, newPost.content, newPost.imageUrl);
-            }
-            await actions.getAllPost(); // Actualiza la lista de posts después de crear o editar
-            handlePostModalClose();
-        } catch (error) {
-            console.error("Error al crear el post:", error.response || error.message);
+        if (isEditing && currentPost) {
+            await actions.updatePost(currentPost.id, newPost.title, newPost.content, newPost.imageUrl);
+        } else {
+            await actions.createPost(newPost.title, newPost.content, newPost.imageUrl);
         }
-    };    
+        await actions.getAllPost();
+        handlePostModalClose();
+    };
 
     const handleEditPost = (post) => {
         setCurrentPost(post);

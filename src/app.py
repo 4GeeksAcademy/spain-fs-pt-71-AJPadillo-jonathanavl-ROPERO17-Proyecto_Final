@@ -8,7 +8,6 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager
-from flask_socketio import SocketIO
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
@@ -31,7 +30,6 @@ db.init_app(app)
 # Configuración de JWT
 app.config["JWT_SECRET_KEY"] = "griffithgutsberserk-88"  # Cambiar esta clave en producción
 jwt = JWTManager(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Configurar la administración y comandos personalizados
 setup_admin(app)
@@ -64,4 +62,3 @@ def serve_any_other_file(path):
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
-    socketio.run(app, debug=True)

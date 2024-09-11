@@ -23,7 +23,6 @@ export const Events = () => {
       try {
         await actions.getCurrentUser(); 
         await actions.getEvents();
-
         
         if (store.currentUser && store.currentUser.email === 'admin@admin.es') {
           setIsAdmin(true);
