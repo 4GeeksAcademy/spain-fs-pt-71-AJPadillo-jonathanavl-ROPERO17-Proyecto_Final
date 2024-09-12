@@ -10,15 +10,15 @@ CORS(api, supports_credentials=True)
 
 @api.route("/login", methods=["POST"])
 def login():
-    email = request.json.get("email", None)
+    username = request.json.get("username", None)
     password = request.json.get("password", None)
-    if email is None or password is None:
+    if username is None or password is None:
         return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    user_query = User.query.filter_by(email=email)
+    user_query = User.query.filter_by(username=username)
     user = user_query.first()
     if user is None:
         return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    if user.email != email or user.password != password:
+    if user.username != username or user.password != password:
         return jsonify({"msg": "Usuario o Password erroneos"}), 401
     access_token = create_access_token(identity=user.id)
     return jsonify(access_token=access_token)

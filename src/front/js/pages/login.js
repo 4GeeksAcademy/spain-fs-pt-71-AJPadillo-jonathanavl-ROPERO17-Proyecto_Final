@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 
 export const Login = () => {
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(""); // State to manage error messages
     const { actions } = useContext(Context);
@@ -12,13 +12,13 @@ export const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(""); // Reset error message before attempting login
-        const logged = await actions.login(email, password);
+        const logged = await actions.login(username, password);
         if (logged) {
             navigate("/");
         } else {
             setError("Username or password is incorrect."); // Set error message if login fails
         }
-        setEmail("");
+        setUsername("");
         setPassword("");
     };
 
@@ -30,14 +30,14 @@ export const Login = () => {
                     {error && <div className="alert alert-danger">{error}</div>} {/* Display error message */}
                     <form onSubmit={handleLogin}>
                         <div className="mb-3">
-                            <label htmlFor="exampleInputEmail1" className="form-label">Email address</label>
+                            <label htmlFor="exampleInputEmail1" className="form-label">Username</label>
                             <input
-                                type="email"
+                                type="text"
                                 className="form-control"
                                 id="exampleInputEmail1"
                                 aria-describedby="emailHelp"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 required
                             />
                         </div>

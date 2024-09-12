@@ -20,9 +20,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 			comments: []
 		},
 		actions: {
-			login: async (email, password) => {
+			login: async (username, password) => {
 				try {
-					const response = await axios.post(`${process.env.BACKEND_URL}/api/login`, { email, password });
+					const response = await axios.post(`${process.env.BACKEND_URL}/api/login`, { username, password });
 					const { access_token } = response.data;
 					if (access_token) {
 						// Guardar token en una cookie
