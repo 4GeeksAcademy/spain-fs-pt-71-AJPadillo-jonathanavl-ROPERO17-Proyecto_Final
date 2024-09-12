@@ -50,6 +50,8 @@ def get_current_user():
         return jsonify(current_user=user_query.serialize()), 200
     except Exception as e:
         return jsonify({"msg": "Token inválido o inexistente", "error": str(e)}), 401
+    
+
 
 @api.route('/reviews', methods=['GET'])
 def get_current_user_reviews():
@@ -116,6 +118,8 @@ def update_review(review_id):
     db.session.commit()
     return jsonify(review.serialize()), 200
 
+
+
 @api.route('/update-avatar', methods=['PUT'])
 def update_avatar():
     try:
@@ -139,6 +143,8 @@ def get_users():
     users = User.query.all()
     all_users = list(map(lambda x: x.serialize(), users))
     return jsonify(all_users), 200
+
+
 
 @api.route('/events', methods=['GET'])
 def get_events():
@@ -187,7 +193,6 @@ def update_event(event_id):
     db.session.commit()
     return jsonify(event.serialize()), 200
 
-
 @api.route('/events/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):
     event = Event.query.get_or_404(event_id)
@@ -195,9 +200,11 @@ def delete_event(event_id):
     db.session.commit()
     return jsonify({"message": "Event deleted successfully"}), 200
 
+
+
 @api.route('/posts', methods=['GET'])
 def get_all_posts():
-    posts = Post.query.all()
+    posts = Post.query.order_by(Post.created_at.asc()).all()
     return jsonify([post.serialize() for post in posts]), 200
 
 @api.route('/posts/<int:post_id>', methods=['GET'])
@@ -219,7 +226,6 @@ def create_post():
         )
         db.session.add(new_post)
         db.session.commit()
-        # Emitir el nuevo post a todos los clientes
         post_data = new_post.serialize()
         return jsonify(post_data), 201
     except Exception as e:
@@ -234,7 +240,6 @@ def update_post(post_id):
         return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
     post = Post.query.get_or_404(post_id)
-
     if post.user_id != current_user_id:
         return jsonify({"error": "Unauthorized"}), 403
     data = request.get_json()
@@ -257,6 +262,8 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return jsonify({"message": "Post deleted successfully"}), 200
+
+
 
 @api.route('/posts/<int:post_id>/comments', methods=['POST'])
 def create_comment(post_id):
@@ -313,6 +320,8 @@ def delete_comment(comment_id):
     db.session.delete(comment)
     db.session.commit()
     return jsonify({"message": "Comment deleted successfully"}), 200
+
+
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
