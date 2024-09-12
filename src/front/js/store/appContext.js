@@ -28,7 +28,8 @@ const injectContext = PassedComponent => {
 			} else {
 				console.error("getMessage is not a function in state.actions");
 			}
-		}
+		};
+		
 
 		useEffect(() => {
 			initializeUser()

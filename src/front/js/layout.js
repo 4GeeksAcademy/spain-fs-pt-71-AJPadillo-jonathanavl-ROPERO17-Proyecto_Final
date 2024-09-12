@@ -9,6 +9,8 @@ import injectContext from "./store/appContext";
 
 import { Login } from "./pages/login";
 import { Signup } from "./pages/signup";
+import { ForgotPassword } from "./pages/password_reset/ForgotPassword";
+import { ResetPasswordForm } from "./pages/password_reset/ResetPasswordForm";
 import { ProfilePage } from "./pages/profilepage";
 import { GameDetailsPage } from "./pages/GameDetailsPage";
 import { Events } from "./pages/events";
@@ -32,6 +34,8 @@ const Layout = () => {
                         <Route element={<Home />} path="/" />
                         <Route element={<Login />} path="/login" />
                         <Route element={<Signup />} path="/signup" />
+                        <Route element={<ForgotPassword/>} path="/ForgotPassword"/>
+                        <Route path="/reset-password-form/:token" element={<ResetPasswordForm />} />
                         <Route element={<Single />} path="/single/:theid" />
                         <Route element={<ProfilePage />} path="/profilepage" />
                         <Route element={<Events />} path="/events" />

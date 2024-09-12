@@ -501,6 +501,30 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error al cargar el comentario:", error.response?.data?.message || error.message);
 				}
 			},	
+			forgotPassword: async (email) => {
+				try {
+					const resp = await fetch(`${process.env.BACKEND_URL}/ResetPasswordForm`, {
+						method: "POST",
+						headers: { 
+							"Content-Type": "application/json",
+							"Origin": window.location.origin
+						},
+						body: JSON.stringify({ email })
+					});
+					
+					if (!resp.ok) {
+						const errorData = await resp.json();
+						throw new Error(errorData.message || "Error en la solicitud");
+					}
+					
+					const data = await resp.json();
+					return { ok: true, message: data.message };
+				} catch (error) {
+					console.error("Error in forgotPassword:", error);
+					return { ok: false, message: error.message };
+				}
+			},
+			
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try {

@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
-
+import { ForgotPassword } from "./password_reset/ForgotPassword";
 export const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -54,7 +54,7 @@ export const Login = () => {
                         </div>
                         <button type="submit" className="btn btn-primary w-100">Submit</button>
                         <div className="mt-3 text-center">
-                            <a href="/forgot-password" className="btn btn-link">Forgot Password?</a>
+                            <a href="/ForgotPassword" className="btn btn-link">Forgot Password?</a>
                         </div>
                     </form>
                 </div>
