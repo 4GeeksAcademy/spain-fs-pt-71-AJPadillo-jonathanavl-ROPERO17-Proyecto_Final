@@ -64,7 +64,7 @@ export const Navbar = () => {
                     {/* Mostrar saludo y botones de perfil y logout solo si el usuario está autenticado */}
                     {store.isLoggedIn ? (
                         <>
-                            <p className="mb-0 mx-3">Hello, {store.currentUser.email}</p>
+                            <p className="mb-0 mx-3">Hello, {store.currentUser.username}</p>
                             <Link to="/profilepage">
                                 <button className="btn btn-outline-info mx-2">Profile</button>
                             </Link>
