@@ -16,6 +16,8 @@ class User(db.Model):
     reviews = db.relationship('Review', backref='author', lazy=True)
     posts = db.relationship('Post', backref='author', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un usuario puede crear varios posts
     comments = db.relationship('Comment', backref='author', lazy=True, cascade="all, delete-orphan") # Relación uno a muchos: un usuario puede crear varios comentarios
+    reset_code = db.Column(db.String(128), nullable=True)  # Código único de restablecimiento
+    reset_expiration = db.Column(db.DateTime, nullable=True)  # Fecha de expiración del código
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -24,6 +26,8 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
+            "reset_code": self.reset_code,
+            "reset_expiration": self.reset_expiration,
             "username": self.username,
             "is_active": self.is_active,
             "is_admin": self.is_admin,

@@ -3,6 +3,12 @@ from api.models import db, User, Review, Event, Post, Comment
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, verify_jwt_in_request
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
+from api.mail_config import mail
+from werkzeug.security import generate_password_hash
+import random
+from datetime import timedelta, datetime
 
 api = Blueprint('api', __name__)
 
@@ -321,6 +327,44 @@ def delete_comment(comment_id):
     db.session.commit()
     return jsonify({"message": "Comment deleted successfully"}), 200
 
+
+
+# Enviar email de restablecimiento
+def send_reset_email(to_email, reset_code):
+    msg = Message("Password Reset Request",
+                  sender="noreply@yourapp.com",
+                  recipients=[to_email])
+    msg.body = f"Tu código de restablecimiento de contraseña es: {reset_code}"
+    mail.send(msg)
+
+@api.route('/password-reset', methods=['POST'])
+def request_password_reset():
+    email = request.json.get('email')
+    user = User.query.filter_by(email=email).first()
+    if user:
+        # Generar código de restablecimiento (6 dígitos)
+        reset_code = str(random.randint(100000, 999999))
+        user.reset_code = reset_code
+        user.reset_expiration = datetime.now() + timedelta(hours=1)  # Código válido por 1 hora
+        db.session.commit()
+        # Enviar correo con el código de restablecimiento
+        send_reset_email(user.email, reset_code)
+    return jsonify({"msg": "Si el correo es válido, recibirás un código de recuperación."}), 200
+
+@api.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    email = data.get('email')
+    reset_code = data.get('reset_code')
+    new_password = data.get('new_password')
+    user = User.query.filter_by(email=email).first()
+    if not user or user.reset_code != reset_code or user.reset_expiration < datetime.now():
+        return jsonify({"msg": "Código de restablecimiento inválido o expirado."}), 400
+    user.password = generate_password_hash(new_password)
+    user.reset_code = None
+    user.reset_expiration = None
+    db.session.commit()
+    return jsonify({"msg": "Contraseña restablecida exitosamente."}), 200
 
 
 @api.route('/hello', methods=['POST', 'GET'])

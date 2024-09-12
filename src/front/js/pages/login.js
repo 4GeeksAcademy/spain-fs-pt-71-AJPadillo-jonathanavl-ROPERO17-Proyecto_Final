@@ -54,7 +54,7 @@ export const Login = () => {
                         </div>
                         <button type="submit" className="btn btn-primary w-100">Submit</button>
                         <div className="mt-3 text-center">
-                            <a href="/forgot-password" className="btn btn-link">Forgot Password?</a>
+                            <a href="/password-reset-request" className="btn btn-link">Forgot Password?</a>
                         </div>
                     </form>
                 </div>
