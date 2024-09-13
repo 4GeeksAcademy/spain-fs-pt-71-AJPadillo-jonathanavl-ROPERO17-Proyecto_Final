@@ -14,7 +14,6 @@ export const PasswordResetRequest = () => {
     };
 
     return (
-        
         <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="card shadow-lg" style={{ width: '80%', maxWidth: '600px' }}>
             <div className="card-body">
@@ -38,3 +37,4 @@ export const PasswordResetRequest = () => {
     </div>
 );
 };
+

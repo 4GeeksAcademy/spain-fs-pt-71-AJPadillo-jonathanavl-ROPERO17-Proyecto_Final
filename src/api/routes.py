@@ -55,6 +55,8 @@ def get_current_user():
         return jsonify(current_user=user_query.serialize()), 200
     except Exception as e:
         return jsonify({"msg": "Token inválido o inexistente", "error": str(e)}), 401
+    
+
 
 @api.route('/reviews', methods=['GET'])
 def get_current_user_reviews():
@@ -121,6 +123,8 @@ def update_review(review_id):
     db.session.commit()
     return jsonify(review.serialize()), 200
 
+  
+
 @api.route('/update-avatar', methods=['PUT'])
 def update_avatar():
     try:
@@ -144,6 +148,8 @@ def get_users():
     users = User.query.all()
     all_users = list(map(lambda x: x.serialize(), users))
     return jsonify(all_users), 200
+
+
 
 @api.route('/events', methods=['GET'])
 def get_events():
@@ -192,7 +198,6 @@ def update_event(event_id):
     db.session.commit()
     return jsonify(event.serialize()), 200
 
-
 @api.route('/events/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):
     event = Event.query.get_or_404(event_id)
@@ -200,11 +205,12 @@ def delete_event(event_id):
     db.session.commit()
     return jsonify({"message": "Event deleted successfully"}), 200
 
+
+
 @api.route('/posts', methods=['GET'])
 def get_all_posts():
-    posts = Post.query.order_by(Post.created_at.asc()).all()  # Ordenar por created_at ascendente (más antiguos primero)
+    posts = Post.query.order_by(Post.created_at.asc()).all()
     return jsonify([post.serialize() for post in posts]), 200
-
 
 @api.route('/posts/<int:post_id>', methods=['GET'])
 def get_post(post_id):
@@ -225,7 +231,6 @@ def create_post():
         )
         db.session.add(new_post)
         db.session.commit()
-        # Emitir el nuevo post a todos los clientes
         post_data = new_post.serialize()
         return jsonify(post_data), 201
     except Exception as e:
@@ -262,6 +267,8 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return jsonify({"message": "Post deleted successfully"}), 200
+
+
 
 @api.route('/posts/<int:post_id>/comments', methods=['POST'])
 def create_comment(post_id):
@@ -326,17 +333,17 @@ def send_reset_email(to_email, reset_code):
     msg.body = f"Tu código de restablecimiento de contraseña es: {reset_code}"
     mail.send(msg)
 
+    
+    
 @api.route('/password-reset', methods=['POST'])
 def request_password_reset():
     email = request.json.get('email')
     user = User.query.filter_by(email=email).first()
     if user:
-        # Generar código de restablecimiento (6 dígitos)
         reset_code = str(random.randint(100000, 999999))
         user.reset_code = reset_code
-        user.reset_expiration = datetime.now() + timedelta(hours=1)  # Código válido por 1 hora
+        user.reset_expiration = datetime.now() + timedelta(hours=1)
         db.session.commit()
-        # Enviar correo con el código de restablecimiento
         send_reset_email(user.email, reset_code)
     return jsonify({"msg": "Si el correo es válido, recibirás un código de recuperación."}), 200
 
@@ -349,14 +356,13 @@ def reset_password():
     user = User.query.filter_by(email=email).first()
     if not user or user.reset_code != reset_code or user.reset_expiration < datetime.now():
         return jsonify({"msg": "Código de restablecimiento inválido o expirado."}), 400
-    # Actualizar solo el campo de la contraseña
     user.password = generate_password_hash(new_password)
-    # Eliminar el código después de ser utilizado
     user.reset_code = None
     user.reset_expiration = None
-    # Asegúrate de que solo se actualicen los campos necesarios
     db.session.commit()
     return jsonify({"msg": "Contraseña restablecida exitosamente."}), 200
+  
+  
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
