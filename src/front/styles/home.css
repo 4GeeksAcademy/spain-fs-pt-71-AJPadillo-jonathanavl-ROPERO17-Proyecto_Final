@@ -73,13 +73,6 @@
     z-index: -1;
 }
 
-/* Efecto de transición de color en el encabezado */
-.heading:hover {
-    color: #8a2be2; /* Morado sutil */
-    background: #f5f5f5; /* Fondo ligeramente más oscuro en hover */
-    transition: color 0.3s ease, background 0.3s ease;
-}
-
 
 /* Searchbar */
 
