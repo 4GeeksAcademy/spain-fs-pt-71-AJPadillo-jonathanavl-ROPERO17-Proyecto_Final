@@ -6,7 +6,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 from api.mail_config import mail
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import random
 from datetime import timedelta, datetime
 
@@ -16,18 +16,16 @@ CORS(api, supports_credentials=True)
 
 @api.route("/login", methods=["POST"])
 def login():
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
-    if username is None or password is None:
-        return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    user_query = User.query.filter_by(username=username)
-    user = user_query.first()
-    if user is None:
-        return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    if user.username != username or user.password != password:
-        return jsonify({"msg": "Usuario o Password erroneos"}), 401
+    username = request.json.get("username")
+    password = request.json.get("password")
+    if not username or not password:
+        return jsonify({"msg": "Usuario o contraseña faltante"}), 400
+    user = User.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.password, password):
+        return jsonify({"msg": "Usuario o contraseña incorrectos"}), 401
     access_token = create_access_token(identity=user.id)
-    return jsonify(access_token=access_token)
+    return jsonify(access_token=access_token), 200
+
 
 @api.route("/logout", methods=["POST"])
 def logout():
@@ -360,9 +358,12 @@ def reset_password():
     user = User.query.filter_by(email=email).first()
     if not user or user.reset_code != reset_code or user.reset_expiration < datetime.now():
         return jsonify({"msg": "Código de restablecimiento inválido o expirado."}), 400
+    # Actualizar solo el campo de la contraseña
     user.password = generate_password_hash(new_password)
+    # Eliminar el código después de ser utilizado
     user.reset_code = None
     user.reset_expiration = None
+    # Asegúrate de que solo se actualicen los campos necesarios
     db.session.commit()
     return jsonify({"msg": "Contraseña restablecida exitosamente."}), 200
 

@@ -1,13 +1,16 @@
 import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
+import { useNavigate } from "react-router-dom";
 
 export const PasswordResetRequest = () => {
     const [email, setEmail] = useState("");
     const { actions } = useContext(Context);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         await actions.requestPasswordReset(email);
+        navigate("/reset-password");
     };
 
     return (

@@ -1,15 +1,26 @@
 import React, { useState, useContext } from "react";
 import { Context } from "../store/appContext";
+import { useNavigate } from "react-router-dom";
 
 export const PasswordResetForm = () => {
     const [email, setEmail] = useState("");
     const [resetCode, setResetCode] = useState("");
     const [newPassword, setNewPassword] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const { actions } = useContext(Context);
-
+    const navigate = useNavigate();
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await actions.resetPassword(email, resetCode, newPassword);
+        try {
+            await actions.resetPassword(email, resetCode, newPassword);
+            setSuccessMessage("Contraseña restablecida");
+
+            setTimeout(() => {
+                navigate("/login");
+            }, 3000);
+        } catch (error) {
+            console.error("Error al restablecer la contraseña:", error);
+        }
     };
 
     return (
@@ -48,6 +59,7 @@ export const PasswordResetForm = () => {
                 </div>
                 <button type="submit" className="btn btn-primary">Restablecer Contraseña</button>
             </form>
+            {successMessage && <p>{successMessage}</p>}
         </div>
     );
 };
