@@ -1,10 +1,11 @@
 import React from 'react';
 import { Modal, Image } from 'react-bootstrap';
+import './index.css';
 
 export const ProfileImageModal = ({ showModal, onHide, profileImages, onImageSelect }) => (
     <Modal show={showModal} onHide={onHide}>
         <Modal.Header closeButton>
-            <Modal.Title>Selecciona tu nueva imagen de perfil</Modal.Title>
+            <Modal.Title>Select your new profile image</Modal.Title>
         </Modal.Header>
         <Modal.Body>
             <div className="d-flex justify-content-around">

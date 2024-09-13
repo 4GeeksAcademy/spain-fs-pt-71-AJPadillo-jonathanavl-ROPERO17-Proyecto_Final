@@ -12,12 +12,23 @@ export const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError(""); // Reset error message before attempting login
-        const logged = await actions.login(username, password);
-        if (logged) {
-            navigate("/");
-        } else {
-            setError("Username or password is incorrect."); // Set error message if login fails
+    
+        console.log("Attempting login with", { username, password });
+    
+        try {
+            const logged = await actions.login(username, password);
+            console.log("Login result:", logged);
+            
+            if (logged) {
+                navigate("/");
+            } else {
+                setError("Username or password is incorrect."); // Set error message if login fails
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            setError("An error occurred during login. Please try again.");
         }
+        
         setUsername("");
         setPassword("");
     };
@@ -54,7 +65,7 @@ export const Login = () => {
                         </div>
                         <button type="submit" className="btn btn-primary w-100">Submit</button>
                         <div className="mt-3 text-center">
-                            <a href="/forgot-password" className="btn btn-link">Forgot Password?</a>
+                            <a href="/password-reset-request" className="btn btn-link">Forgot Password?</a>
                         </div>
                     </form>
                 </div>

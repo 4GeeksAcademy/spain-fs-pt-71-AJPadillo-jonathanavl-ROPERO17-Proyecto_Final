@@ -3,22 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { Context } from "../store/appContext";
 
 export const Signup = () => {
-    // Definimos los estados locales para el email, username y la contraseña
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-    // Obtenemos el contexto global para acceder a las acciones
     const { store, actions } = useContext(Context);
-    // Usamos navigate para redirigir después de un registro exitoso
     const navigate = useNavigate();
-    // Esta función maneja el envío del formulario
+
     const handleSignup = async (e) => {
-        e.preventDefault(); // Prevenimos la acción por defecto del formulario (recargar la página)
-        // Llamamos a la función createUser del contexto global
+        e.preventDefault();
         const userCreated = await actions.createUser(username, email, password);
         if (userCreated) {
-            console.log("Usuario creado con éxito");
-            navigate('/login'); // Redirigimos a la página de login
+            console.log("Usuario creado");
+            const loginSuccess = await actions.login(username, password);
+            if (loginSuccess) {
+                console.log("Logeado con éxito");
+                navigate('/');
+            } else {
+                console.log("Fallo al iniciar sesión");
+            }
         } else {
             console.log("Fallo al crear el usuario");
         }
@@ -30,16 +32,17 @@ export const Signup = () => {
             <div className="card-body">
                 <h2 className="m-auto text-center display-4 mb-4">Signup</h2>
                 <form onSubmit={handleSignup}>
-                <div className="mb-3">
-                            <label htmlFor="username" className="form-label">Username</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </div>
+                    <div className="mb-3">
+                        <label htmlFor="username" className="form-label">Username</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                    </div>
                     <div className="mb-3">
                         <label htmlFor="exampleInputEmail1" className="form-label">Email address</label>
                         <input
@@ -47,8 +50,8 @@ export const Signup = () => {
                             className="form-control"
                             id="exampleInputEmail1"
                             aria-describedby="emailHelp"
-                            value={email} // El valor del input está vinculado al estado email
-                            onChange={(e) => setEmail(e.target.value)} // Actualizamos el estado email al cambiar el input
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
@@ -58,8 +61,8 @@ export const Signup = () => {
                             type="password"
                             className="form-control"
                             id="exampleInputPassword1"
-                            value={password} // El valor del input está vinculado al estado password
-                            onChange={(e) => setPassword(e.target.value)} // Actualizamos el estado password al cambiar el input
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>

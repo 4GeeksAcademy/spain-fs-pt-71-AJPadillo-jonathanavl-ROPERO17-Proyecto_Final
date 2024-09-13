@@ -23,7 +23,7 @@ export const Navbar = () => {
                 <div className="d-flex d-sm-none align-items-center">
                     {store.isLoggedIn ? (
                         <>
-                            <Link to="/profilepage">
+                            <Link to="/ProfileView">
                                 <img
                                     src={store.currentUser.profile_image || '/default-profile.png'} // Ruta a la imagen del perfil
                                     alt="Profile"
@@ -55,8 +55,8 @@ export const Navbar = () => {
 
                 <div className="d-flex align-items-center">
                     <Link to="/" className="nav-link text-black mx-2">Home</Link>
-                    <Link to="/post" className="nav-link text-black mx-2">Forum</Link>
-                    <Link to="/events" className="nav-link text-black mx-2">Events</Link>
+                    <Link to="/Forum" className="nav-link text-black mx-2">Forum</Link>
+                    <Link to="/EventPage" className="nav-link text-black mx-2">Events</Link>
                     <SearchBar />
                 </div>
 
@@ -65,7 +65,7 @@ export const Navbar = () => {
                     {store.isLoggedIn ? (
                         <>
                             <p className="mb-0 mx-3">Hello, {store.currentUser.username}</p>
-                            <Link to="/profilepage">
+                            <Link to="/ProfileView">
                                 <button className="btn btn-outline-info mx-2">Profile</button>
                             </Link>
                             <button className="btn btn-outline-danger" onClick={handleLogout}>Logout</button>

@@ -15,7 +15,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 			gameDetails: null, // Aquí almacenamos los detalles del juego seleccionado
 			searchResults: [],
 			reviews: [],
-			events:[],
+			events: [],
 			posts: [],
 			comments: []
 		},
@@ -225,9 +225,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			updateReview: async (reviewId, updatedComment) => {
+			updateReview: async (reviewId, updatedTitle, updatedComment) => {
 				try {
-					const response = await axios.put(`${process.env.BACKEND_URL}/api/reviews/${reviewId}`, { comment: updatedComment });
+					const response = await axios.put(`${process.env.BACKEND_URL}/api/reviews/${reviewId}`, {
+						title: updatedTitle,
+						comment: updatedComment
+					});
 					if (response.status === 200) {
 						const updatedReview = response.data;
 						const store = getStore();
@@ -370,8 +373,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error('Error al crear el post:', error.response?.data?.message || error.message);
 				}
-			},			
-			
+			},
+
 			updatePost: async (postId, title, content, imageUrl) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -389,8 +392,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error('Error al actualizar el post:', error.response?.data?.message || error.message);
 				}
-			},			
-			
+			},
+
 			deletePost: async (postId) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -404,7 +407,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error al eliminar el post:', error.response?.data?.message || error.message);
 				}
 			},
-			
+
 			getPostById: async (postId) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -418,19 +421,19 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error al cargar el post:", error.response?.data?.message || error.message);
 				}
 			},
-			
+
 			getAllPost: async () => {
-				try{
+				try {
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/posts`);
-					if (response.status === 200){
+					if (response.status === 200) {
 						console.log("Posts obtenidos correctamente:", response.data);
-                        setStore({posts: response.data});
+						setStore({ posts: response.data });
 					}
-				} catch (error){
+				} catch (error) {
 					console.error("Error al obtener los posts:", error);
 				}
 			},
-			
+
 			createComment: async (postId, content) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -445,8 +448,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error('Error al crear el comentario:', error.response?.data?.message || error.message);
 				}
-			},			
-			
+			},
+
 			updateComment: async (commentId, content) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -461,8 +464,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error('Error al actualizar el comentario:', error.response?.data?.message || error.message);
 				}
-			},			
-			
+			},
+
 			deleteComment: async (commentId) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -476,7 +479,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error al eliminar el comentario:', error.response?.data?.message || error.message);
 				}
 			},
-			
+
 			getCommentsByPost: async (postId) => {
 				try {
 					const response = await fetch(`/api/posts/${postId}/comments`);
@@ -487,7 +490,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error fetching comments:', error);
 				}
 			},
-			
+
 			getCommentById: async (commentId) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -500,8 +503,32 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error("Error al cargar el comentario:", error.response?.data?.message || error.message);
 				}
-			},	
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			},
+			requestPasswordReset: async (email) => {
+				try {
+					const res = await axios.post(`${process.env.BACKEND_URL}/api/password-reset`, {
+						email
+					});
+					console.log(res.data.msg);
+				} catch (error) {
+					console.error("Error al solicitar la recuperación de contraseña:", error.response ? error.response.data : error.message);
+				}
+			},
+
+			resetPassword: async (email, resetCode, newPassword) => {
+				try {
+					const res = await axios.post(`${process.env.BACKEND_URL}/api/reset-password`, {
+						email,
+						reset_code: resetCode,
+						new_password: newPassword
+					});
+					if (!res.data) throw new Error("Error al restablecer la contraseña");
+					console.log(res.data.msg);
+				} catch (error) {
+					console.error("Error al restablecer la contraseña:", error.response ? error.response.data : error.message);
+				}
+			},
+			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try {
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/hello`);

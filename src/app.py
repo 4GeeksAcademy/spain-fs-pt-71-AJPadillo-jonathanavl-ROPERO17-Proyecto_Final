@@ -8,6 +8,7 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager
+from api.mail_config import init_mail, mail
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
@@ -30,6 +31,17 @@ db.init_app(app)
 # Configuración de JWT
 app.config["JWT_SECRET_KEY"] = "griffithgutsberserk-88"  # Cambiar esta clave en producción
 jwt = JWTManager(app)
+
+# Configuración de Mailtrap
+app.config['MAIL_SERVER'] = 'smtp.mailtrap.io'  # Usar el servidor de Mailtrap
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = '69f5ab6b4cee36'  # Coloca aquí el username de SMTP de Mailtrap
+app.config['MAIL_PASSWORD'] = '658a3c675fa88e'  # Coloca aquí la contraseña de SMTP de Mailtrap
+app.config['MAIL_DEFAULT_SENDER'] = 'recoverpassword@playlife.com'  # O el correo que prefieras como remitente
+
+
+init_mail(app)
 
 # Configurar la administración y comandos personalizados
 setup_admin(app)
