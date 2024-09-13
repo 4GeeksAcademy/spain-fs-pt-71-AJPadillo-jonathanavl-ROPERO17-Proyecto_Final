@@ -1,0 +1,138 @@
+/*Gamecard*/
+.card-games {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 0 auto 20px;
+    width: 280px;
+    height: 360px !important;
+    transition: transform 0.3s ease;
+    border: none;
+    position: relative;
+}
+.card-games body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+    border:none;
+}
+.card-games:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+.card-games-image-container {
+    position: relative; /* Necesario para posicionar el metacritic-wrapper dentro de este contenedor */
+}
+.card-games-img-top {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    margin: 0;
+    padding: 0;
+    border-radius: 8px 8px 0 0; 
+}
+
+.card-games-body {
+    padding: 15px;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.card-text {
+    font-size: 14px;
+    color: #666;
+}
+
+.card-button {
+    color: white;
+    background-color: #222;
+    font-weight: 500;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 12px;
+    padding: 8px 17px;
+    cursor: pointer;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    position: absolute; 
+    bottom: 19px; 
+    left: 15px;
+    z-index: 10; 
+    outline: none;
+    border: none;
+}
+
+  
+  .card-button:hover {
+    background-color: #a1a1a1;
+  }
+  .metacritic-wrapper {
+    position: absolute;
+    top: 0px; 
+    right: -13px; 
+    width: 60px;
+    height: 30px; 
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    z-index: 20;
+}
+
+  /*carousel*/
+.carousel-item {
+    margin-bottom: 100px;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%;
+    z-index: 10;
+}
+
+.carousel-control-prev {
+    left: 0;
+}
+
+.carousel-control-next {
+    right: 0;
+}
+
+.carousel {
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    position: fixed;
+    top: 50%;
+    width: 5%;
+    z-index: 10;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.822);
+    border-radius: 10%;
+    width: 40px; 
+    height: 40px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-control-prev {
+    left: 10px;
+}
+
+.carousel-control-next {
+    right: 10px; 
+}

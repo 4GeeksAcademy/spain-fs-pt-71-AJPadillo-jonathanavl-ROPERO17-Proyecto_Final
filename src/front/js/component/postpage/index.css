@@ -1,0 +1,127 @@
+/* PostPage.css */
+.post-card {
+    border: none; /* Eliminar borde de la tarjeta */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Agregar sombra sutil */
+    border-radius: 8px; /* Bordes redondeados */
+    overflow: hidden; /* Evitar desbordamiento del contenido */
+    background-color: #fff; /* Fondo blanco */
+    margin-bottom: 1.5rem; /* Espacio inferior */
+    position: relative;
+}
+
+.post-card-header {
+    padding: 1rem;
+    border-bottom: 1px solid #eaeaea; /* Línea divisoria */
+    display: flex;
+    align-items: center;
+}
+
+.post-card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.post-card-username {
+    color: #888; /* Color gris para el nombre de usuario */
+    font-size: 0.875rem;
+    margin-left: 10px;
+}
+
+.post-card-icons {
+    position: absolute;
+    top: 1rem; /* Ajustar la posición para que esté más cerca del borde superior */
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.post-card-icons button {
+    background: transparent;
+    border: none;
+    color: #333; /* Color de íconos */
+    font-size: 1rem; /* Tamaño de los íconos */
+    cursor: pointer;
+}
+
+.post-card-body {
+    margin-left: 15px;
+}
+
+.post-card-image {
+    width: 100%;
+    height: auto;
+    border-bottom: 1px solid #eaeaea; /* Línea divisoria debajo de la imagen */
+}
+
+.post-card-text {
+    margin-top: 5px;
+    font-size: 1rem;
+    color: #333;
+}
+
+.comment-list {
+    padding: 0;
+    margin: 1rem 0;
+    margin-left: 1rem; /* Margen izquierdo añadido */
+    list-style-type: none;
+    border-top: 1px solid #eaeaea;
+}
+
+.comment-list-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f4f4f4;
+}
+
+.comment-list-item:last-child {
+    border-bottom: none;
+}
+
+.comment-author {
+    font-weight: bold;
+    color: #333;
+}
+
+.create-comment-form {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-top: 1px solid #eaeaea;
+    background-color: #fafafa;
+}
+
+.create-comment-form textarea {
+    flex: 1;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.create-comment-form button {
+    background-color: #007bff; /* Color del botón */
+    border: none;
+    color: white;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+
+.create-post-button {
+    margin-bottom: 150px;
+    position: absolute; /* Permite que el botón se posicione encima del encabezado */
+    right: 1rem; /* Ajusta el margen derecho según sea necesario */
+    top: 8px;
+    padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .create-post-button {
+        top: 7px;
+        width: 23%;
+        max-width: 300px; 
+        margin: 0 auto;
+    }
+}

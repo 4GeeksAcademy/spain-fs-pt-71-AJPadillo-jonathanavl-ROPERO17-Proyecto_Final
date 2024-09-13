@@ -69,7 +69,7 @@ class Review(db.Model):
             "id": self.id,
             "game_id": self.game_id,
             "user_id": self.user_id,
-            "username": self.author.username,  # Recupera el nombre de usuario del autor
+            "username": self.author.username,
             "title": self.title,
             "comment": self.comment,
             "created_at": self.created_at
@@ -132,6 +132,7 @@ class Post(db.Model):
             "content": self.content,
             "image_url": self.image_url,
             "user_id": self.user_id,
+            "username": self.author.username,
             "created_at": self.created_at.isoformat(),
             "comments": [comment.serialize() for comment in self.comments]
         }
@@ -144,6 +145,7 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ID del usuario que escribió el comentario
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)  # ID del post al que pertenece el comentario
 
+
     def __repr__(self):
         return f'<Comment {self.id} for Post {self.post_id}>'
 
@@ -152,5 +154,6 @@ class Comment(db.Model):
             "id": self.id,
             "content": self.content,
             "user_id": self.user_id,
+            "username": self.author.username,
             "post_id": self.post_id
         }

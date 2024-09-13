@@ -12,10 +12,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 			users: [],
 			games: [],
 			genres: [],
-			gameDetails: null, // Aquí almacenamos los detalles del juego seleccionado
+			gameDetails: null,
 			searchResults: [],
 			reviews: [],
-			events:[],
+			events: [],
 			posts: [],
 			comments: []
 		},
@@ -25,8 +25,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					const response = await axios.post(`${process.env.BACKEND_URL}/api/login`, { username, password });
 					const { access_token } = response.data;
 					if (access_token) {
-						// Guardar token en una cookie
-						Cookies.set('accessToken', access_token, { expires: 7 }); // La cookie expirará en 7 días
+						Cookies.set('accessToken', access_token, { expires: 7 });
 						await getActions().getCurrentUser();
 						console.log("Login successful");
 						console.log("Token:", access_token);
@@ -40,7 +39,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			logout: () => {
-				// Eliminar la cookie del token
 				Cookies.remove('accessToken');
 				setStore({
 					currentUser: null,
@@ -61,7 +59,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			getCurrentUser: async () => {
 				try {
-					const accessToken = Cookies.get('accessToken'); // Obtener token de la cookie
+					const accessToken = Cookies.get('accessToken');
 					if (!accessToken) throw new Error("No token found");
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/current-user`, {
 						headers: {
@@ -71,7 +69,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					setStore({ currentUser: response.data.current_user, isLoggedIn: true, isLoadingUser: false });
 				} catch (error) {
 					console.error("Error loading current user from backend:", error.response?.data?.message || error.message);
-					Cookies.remove('accessToken'); // Eliminar la cookie si hay error
+					Cookies.remove('accessToken');
 					setStore({
 						currentUser: null,
 						isLoggedIn: false,
@@ -191,10 +189,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 			addReview: async (review) => {
 				try {
 					const accessToken = Cookies.get('accessToken');
-					// Asegúrate de que el objeto review contiene todos los campos necesarios
 					const response = await axios.post(`${process.env.BACKEND_URL}/api/reviews/${review.game_id}`, {
-						title: review.title,      // Título de la reseña
-						comment: review.comment   // Comentario de la reseña
+						title: review.title,
+						comment: review.comment
 					}, {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -225,9 +222,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}
 			},
 
-			updateReview: async (reviewId, updatedComment) => {
+			updateReview: async (reviewId, updatedTitle, updatedComment) => {
 				try {
-					const response = await axios.put(`${process.env.BACKEND_URL}/api/reviews/${reviewId}`, { comment: updatedComment });
+					const response = await axios.put(`${process.env.BACKEND_URL}/api/reviews/${reviewId}`, {
+						title: updatedTitle,
+						comment: updatedComment
+					});
 					if (response.status === 200) {
 						const updatedReview = response.data;
 						const store = getStore();
@@ -265,20 +265,17 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			createEvent: async (event) => {
 				try {
-					// Obtiene el token de acceso almacenado en localStorage
 					const accessToken = Cookies.get('accessToken');
-					// Realiza una solicitud POST a la API para crear un nuevo evento
 					const response = await axios.post(
 						process.env.BACKEND_URL + "/api/events",
 						event,
 						{
 							headers: {
-								"Authorization": `Bearer ${accessToken}`, // Añade el token de autenticación en la cabecera
-								"Content-Type": "application/json" // Especifica que el cuerpo de la solicitud es JSON
+								"Authorization": `Bearer ${accessToken}`,
+								"Content-Type": "application/json"
 							}
 						}
 					);
-					// Si la respuesta es exitosa, agrega el nuevo evento al store
 					const store = getStore();
 					setStore({ events: [...store.events, response.data] });
 				} catch (error) {
@@ -288,63 +285,53 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			updateEvent: async (eventId, updatedEvent) => {
 				try {
-					// Obtiene el token de acceso almacenado en localStorage
 					const accessToken = Cookies.get('accessToken');
 					const response = await axios.put(
 						`${process.env.BACKEND_URL}/api/events/${eventId}`,
 						updatedEvent,
 						{
 							headers: {
-								"Authorization": `Bearer ${accessToken}`, // Añade el token de autenticación en la cabecera
-								"Content-Type": "application/json" // Especifica que el cuerpo de la solicitud es JSON
+								"Authorization": `Bearer ${accessToken}`,
+								"Content-Type": "application/json"
 							}
 						}
 					);
-					// Si la respuesta es exitosa, actualiza el evento en el store
 					const store = getStore();
 					const updatedEvents = store.events.map(event => event.id === eventId ? response.data : event);
 					setStore({ events: updatedEvents });
 				} catch (error) {
-					// Si ocurre un error durante la solicitud, lo registra en la consola
 					console.error("Error en updateEvent:", error);
 				}
 			},
 
 			deleteEvent: async (eventId) => {
 				try {
-					// Obtiene el token de acceso almacenado en localStorage
 					const accessToken = Cookies.get('accessToken');
 
-					// Realiza una solicitud DELETE a la API para eliminar un evento específico
 					await axios.delete(`${process.env.BACKEND_URL}/api/events/${eventId}`, {
 						headers: {
-							"Authorization": `Bearer ${accessToken}` // Añade el token de autenticación en la cabecera
+							"Authorization": `Bearer ${accessToken}`
 						}
 					});
-					// Si la respuesta es exitosa, elimina el evento del store
 					const store = getStore();
 					const updatedEvents = store.events.filter(event => event.id !== eventId);
 					setStore({ events: updatedEvents });
 				} catch (error) {
-					// Si ocurre un error durante la solicitud, lo registra en la consola
 					console.error("Error en deleteEvent:", error);
 				}
 			},
 
 			attendEvent: async (eventId) => {
 				try {
-					// Obtiene el token de acceso almacenado en localStorage
 					const accessToken = Cookies.get('accessToken');
-					// Verifica si el usuario está autenticado
 					if (!accessToken) {
 						console.error("Debes estar registrado para asistir a un evento.");
-						// Redirige a la página de inicio de sesión
 						window.location.href = "/login";
 						return;
 					}
 					await axios.post(`${process.env.BACKEND_URL}/api/events/${eventId}/attend`, null, {
 						headers: {
-							"Authorization": `Bearer ${accessToken}` // Añade el token de autenticación en la cabecera
+							"Authorization": `Bearer ${accessToken}`
 						}
 					});
 					console.log("Asistencia registrada correctamente");
@@ -370,8 +357,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error('Error al crear el post:', error.response?.data?.message || error.message);
 				}
-			},			
-			
+			},
+
 			updatePost: async (postId, title, content, imageUrl) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -389,8 +376,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error('Error al actualizar el post:', error.response?.data?.message || error.message);
 				}
-			},			
-			
+			},
+
 			deletePost: async (postId) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -404,7 +391,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error al eliminar el post:', error.response?.data?.message || error.message);
 				}
 			},
-			
+
 			getPostById: async (postId) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -418,19 +405,19 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error al cargar el post:", error.response?.data?.message || error.message);
 				}
 			},
-			
+
 			getAllPost: async () => {
-				try{
+				try {
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/posts`);
-					if (response.status === 200){
+					if (response.status === 200) {
 						console.log("Posts obtenidos correctamente:", response.data);
-                        setStore({posts: response.data});
+						setStore({ posts: response.data });
 					}
-				} catch (error){
+				} catch (error) {
 					console.error("Error al obtener los posts:", error);
 				}
 			},
-			
+
 			createComment: async (postId, content) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -445,8 +432,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error('Error al crear el comentario:', error.response?.data?.message || error.message);
 				}
-			},			
-			
+			},
+
 			updateComment: async (commentId, content) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -461,8 +448,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error('Error al actualizar el comentario:', error.response?.data?.message || error.message);
 				}
-			},			
-			
+			},
+
 			deleteComment: async (commentId) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -476,7 +463,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error al eliminar el comentario:', error.response?.data?.message || error.message);
 				}
 			},
-			
+
 			getCommentsByPost: async (postId) => {
 				try {
 					const response = await fetch(`/api/posts/${postId}/comments`);
@@ -487,7 +474,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error('Error fetching comments:', error);
 				}
 			},
-			
+
 			getCommentById: async (commentId) => {
 				try {
 					const token = Cookies.get('accessToken');
@@ -501,7 +488,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error al cargar el comentario:", error.response?.data?.message || error.message);
 				}
 			},
-			
+
 			requestPasswordReset: async (email) => {
 				try {
 					const res = await axios.post(`${process.env.BACKEND_URL}/api/password-reset`, {
@@ -512,7 +499,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error al solicitar la recuperación de contraseña:", error.response ? error.response.data : error.message);
 				}
 			},
-			
+
 			resetPassword: async (email, resetCode, newPassword) => {
 				try {
 					const res = await axios.post(`${process.env.BACKEND_URL}/api/reset-password`, {
@@ -526,8 +513,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error al restablecer la contraseña:", error.response ? error.response.data : error.message);
 				}
 			},
-			
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 			getMessage: async () => {
 				try {
 					const response = await axios.get(`${process.env.BACKEND_URL}/api/hello`);

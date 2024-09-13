@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: b12d89f7e54a
+Revision ID: aa441bae5e36
 Revises: 
-Create Date: 2024-09-09 18:07:35.060758
+Create Date: 2024-09-13 02:04:52.882090
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b12d89f7e54a'
+revision = 'aa441bae5e36'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,11 +29,14 @@ def upgrade():
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
-    sa.Column('password', sa.String(length=80), nullable=False),
+    sa.Column('password', sa.String(length=255), nullable=False),
     sa.Column('username', sa.String(length=20), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('is_admin', sa.Boolean(), nullable=False),
     sa.Column('profile_image', sa.String(length=255), nullable=True),
     sa.Column('preferred_genres', sa.String(length=200), nullable=True),
+    sa.Column('reset_code', sa.String(length=128), nullable=True),
+    sa.Column('reset_expiration', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('username')
@@ -44,6 +47,7 @@ def upgrade():
     sa.Column('content', sa.Text(), nullable=False),
     sa.Column('image_url', sa.String(length=255), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

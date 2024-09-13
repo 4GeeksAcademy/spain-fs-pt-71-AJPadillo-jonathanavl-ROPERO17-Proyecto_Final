@@ -36,7 +36,8 @@ def logout():
 @api.route('/signup', methods=['POST'])
 def create_user():
     data = request.json
-    new_user = User(username=data['username'], email=data['email'], password=data['password'])
+    hashed_password = generate_password_hash(data['password'])
+    new_user = User(username=data['username'], email=data['email'], password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"user": new_user.serialize()}), 200
@@ -116,13 +117,13 @@ def update_review(review_id):
     review = Review.query.get_or_404(review_id)
     data = request.json
     if 'title' in data:
-        review.comment = data['title']
+        review.title = data['title']
     if 'comment' in data:
         review.comment = data['comment']
     db.session.commit()
     return jsonify(review.serialize()), 200
 
-
+  
 
 @api.route('/update-avatar', methods=['PUT'])
 def update_avatar():
@@ -325,9 +326,6 @@ def delete_comment(comment_id):
     db.session.commit()
     return jsonify({"message": "Comment deleted successfully"}), 200
 
-
-
-# Enviar email de restablecimiento
 def send_reset_email(to_email, reset_code):
     msg = Message("Password Reset Request",
                   sender="noreply@yourapp.com",
@@ -335,17 +333,17 @@ def send_reset_email(to_email, reset_code):
     msg.body = f"Tu código de restablecimiento de contraseña es: {reset_code}"
     mail.send(msg)
 
+    
+    
 @api.route('/password-reset', methods=['POST'])
 def request_password_reset():
     email = request.json.get('email')
     user = User.query.filter_by(email=email).first()
     if user:
-        # Generar código de restablecimiento (6 dígitos)
         reset_code = str(random.randint(100000, 999999))
         user.reset_code = reset_code
-        user.reset_expiration = datetime.now() + timedelta(hours=1)  # Código válido por 1 hora
+        user.reset_expiration = datetime.now() + timedelta(hours=1)
         db.session.commit()
-        # Enviar correo con el código de restablecimiento
         send_reset_email(user.email, reset_code)
     return jsonify({"msg": "Si el correo es válido, recibirás un código de recuperación."}), 200
 
@@ -358,15 +356,13 @@ def reset_password():
     user = User.query.filter_by(email=email).first()
     if not user or user.reset_code != reset_code or user.reset_expiration < datetime.now():
         return jsonify({"msg": "Código de restablecimiento inválido o expirado."}), 400
-    # Actualizar solo el campo de la contraseña
     user.password = generate_password_hash(new_password)
-    # Eliminar el código después de ser utilizado
     user.reset_code = None
     user.reset_expiration = None
-    # Asegúrate de que solo se actualicen los campos necesarios
     db.session.commit()
     return jsonify({"msg": "Contraseña restablecida exitosamente."}), 200
-
+  
+  
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():

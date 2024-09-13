@@ -1,74 +1,41 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Context } from '../store/appContext';
+import { Context } from '../../store/appContext';
 import { Container, Row, Button } from 'react-bootstrap';
-import { EventCard } from '../component/eventspage/EventCard';
-import { EventForm } from '../component/eventspage/EventForm';
+import { EventCard } from './EventCard';
+import { EventForm } from './EventForm';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../component/eventspage/events.css';
+import "./index.css";
 
-export const Events = () => {
+const Events = () => {
   const { store, actions } = useContext(Context);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [newEvent, setNewEvent] = useState({
-    name: '',
-    description: '',
-    date: '',
-    image_url: ''
-  });
   const [editingEvent, setEditingEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchUserAndEvents = async () => {
       try {
-        await actions.getCurrentUser(); 
+        await actions.getCurrentUser();
         await actions.getEvents();
-        
-        if (store.currentUser && store.currentUser.is_admin === true) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+        setIsAdmin(store.currentUser?.is_admin || false);
       } catch (error) {
         console.error('Error fetching user and events:', error);
       }
     };
 
     fetchUserAndEvents();
-  }, []); 
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      if (editingEvent) {
-        await actions.updateEvent(editingEvent.id, newEvent);
-        setEditingEvent(null);
-      } else {
-        await actions.createEvent(newEvent);
-      }
-      setNewEvent({ name: '', description: '', date: '', image_url: '' });
-      setShowModal(false); 
-    } catch (error) {
-      console.error('Error submitting event:', error);
-    }
-  };
+  }, []);
 
   const handleEdit = (event) => {
-    setNewEvent({
-      name: event.name,
-      description: event.description,
-      date: new Date(event.date).toISOString().slice(0, 16),
-      image_url: event.image_url || ''
-    });
     setEditingEvent(event);
-    setShowModal(true); // Abre el modal
+    setShowModal(true);
   };
 
   const handleDelete = async (eventId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este evento?')) {
       try {
         await actions.deleteEvent(eventId);
+        await actions.getEvents(); // Refresh the event list
       } catch (error) {
         console.error('Error deleting event:', error);
       }
@@ -78,18 +45,14 @@ export const Events = () => {
   const handleAttend = async (eventId) => {
     try {
       await actions.attendEvent(eventId);
-      await actions.getEvents();
+      await actions.getEvents(); // Refresh the event list
     } catch (error) {
       console.error('Error attending event:', error);
     }
   };
 
-  const handleOpenModal = () => {
-    setShowModal(true);
-  };
-
+  const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => {
-    setNewEvent({ name: '', description: '', date: '', image_url: '' });
     setEditingEvent(null);
     setShowModal(false);
   };
@@ -100,32 +63,36 @@ export const Events = () => {
 
   return (
     <Container className="events-container">
-      <h1>Eventos</h1>
+    <div className="heading-container">
+      <h1 className="heading">Events</h1>
       {isAdmin && (
-        <Button variant="primary" onClick={handleOpenModal} className="mb-3">
-          Crear Evento
+        <Button variant="primary" className="create-event-button" onClick={handleOpenModal}>
+          New Event
         </Button>
       )}
+    </div>
+    <br />
       <Row>
         {store.events.map((event) => (
           <EventCard
             key={event.id}
             event={event}
             isAdmin={isAdmin}
-            handleAttend={handleAttend}
-            handleEdit={handleEdit}
-            handleDelete={handleDelete}
+            onAttend={handleAttend}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
           />
         ))}
       </Row>
       <EventForm
         showModal={showModal}
         handleCloseModal={handleCloseModal}
-        handleSubmit={handleSubmit}
-        newEvent={newEvent}
-        setNewEvent={setNewEvent}
         editingEvent={editingEvent}
+        actions={actions}
+        getEvents={actions.getEvents}
       />
     </Container>
   );
 };
+
+export default Events;

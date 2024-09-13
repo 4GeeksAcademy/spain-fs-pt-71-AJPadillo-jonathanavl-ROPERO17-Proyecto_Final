@@ -14,21 +14,27 @@ export const PasswordResetRequest = () => {
     };
 
     return (
-        <div className="container">
-            <h2>Recuperar Contraseña</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">Enviar</button>
-            </form>
+        <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="card shadow-lg" style={{ width: '80%', maxWidth: '600px' }}>
+            <div className="card-body">
+                <h1 className="card-title mb-4">Recovery Password</h1>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label htmlFor="email" className="form-label">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            className="form-control"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary">Send</button>
+                </form>
+            </div>
         </div>
-    );
+    </div>
+);
 };
+
