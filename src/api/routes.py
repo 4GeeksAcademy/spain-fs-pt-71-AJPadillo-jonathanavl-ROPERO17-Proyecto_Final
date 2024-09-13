@@ -3,6 +3,12 @@ from api.models import db, User, Review, Event, Post, Comment
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, verify_jwt_in_request
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
+from api.mail_config import mail
+from werkzeug.security import generate_password_hash, check_password_hash
+import random
+from datetime import timedelta, datetime
 
 api = Blueprint('api', __name__)
 
@@ -10,18 +16,16 @@ CORS(api, supports_credentials=True)
 
 @api.route("/login", methods=["POST"])
 def login():
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
-    if username is None or password is None:
-        return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    user_query = User.query.filter_by(username=username)
-    user = user_query.first()
-    if user is None:
-        return jsonify({"msg": "Usuario o Password erroneos"}), 401
-    if user.username != username or user.password != password:
-        return jsonify({"msg": "Usuario o Password erroneos"}), 401
+    username = request.json.get("username")
+    password = request.json.get("password")
+    if not username or not password:
+        return jsonify({"msg": "Usuario o contraseña faltante"}), 400
+    user = User.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.password, password):
+        return jsonify({"msg": "Usuario o contraseña incorrectos"}), 401
     access_token = create_access_token(identity=user.id)
-    return jsonify(access_token=access_token)
+    return jsonify(access_token=access_token), 200
+
 
 @api.route("/logout", methods=["POST"])
 def logout():
@@ -50,6 +54,8 @@ def get_current_user():
         return jsonify(current_user=user_query.serialize()), 200
     except Exception as e:
         return jsonify({"msg": "Token inválido o inexistente", "error": str(e)}), 401
+    
+
 
 @api.route('/reviews', methods=['GET'])
 def get_current_user_reviews():
@@ -116,6 +122,8 @@ def update_review(review_id):
     db.session.commit()
     return jsonify(review.serialize()), 200
 
+
+
 @api.route('/update-avatar', methods=['PUT'])
 def update_avatar():
     try:
@@ -139,6 +147,8 @@ def get_users():
     users = User.query.all()
     all_users = list(map(lambda x: x.serialize(), users))
     return jsonify(all_users), 200
+
+
 
 @api.route('/events', methods=['GET'])
 def get_events():
@@ -187,7 +197,6 @@ def update_event(event_id):
     db.session.commit()
     return jsonify(event.serialize()), 200
 
-
 @api.route('/events/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):
     event = Event.query.get_or_404(event_id)
@@ -195,9 +204,11 @@ def delete_event(event_id):
     db.session.commit()
     return jsonify({"message": "Event deleted successfully"}), 200
 
+
+
 @api.route('/posts', methods=['GET'])
 def get_all_posts():
-    posts = Post.query.all()
+    posts = Post.query.order_by(Post.created_at.asc()).all()
     return jsonify([post.serialize() for post in posts]), 200
 
 @api.route('/posts/<int:post_id>', methods=['GET'])
@@ -219,7 +230,6 @@ def create_post():
         )
         db.session.add(new_post)
         db.session.commit()
-        # Emitir el nuevo post a todos los clientes
         post_data = new_post.serialize()
         return jsonify(post_data), 201
     except Exception as e:
@@ -234,7 +244,6 @@ def update_post(post_id):
         return jsonify({"msg": "Unauthorized"}), 401
     current_user_id = get_jwt_identity()
     post = Post.query.get_or_404(post_id)
-
     if post.user_id != current_user_id:
         return jsonify({"error": "Unauthorized"}), 403
     data = request.get_json()
@@ -257,6 +266,8 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     return jsonify({"message": "Post deleted successfully"}), 200
+
+
 
 @api.route('/posts/<int:post_id>/comments', methods=['POST'])
 def create_comment(post_id):
@@ -313,6 +324,49 @@ def delete_comment(comment_id):
     db.session.delete(comment)
     db.session.commit()
     return jsonify({"message": "Comment deleted successfully"}), 200
+
+
+
+# Enviar email de restablecimiento
+def send_reset_email(to_email, reset_code):
+    msg = Message("Password Reset Request",
+                  sender="noreply@yourapp.com",
+                  recipients=[to_email])
+    msg.body = f"Tu código de restablecimiento de contraseña es: {reset_code}"
+    mail.send(msg)
+
+@api.route('/password-reset', methods=['POST'])
+def request_password_reset():
+    email = request.json.get('email')
+    user = User.query.filter_by(email=email).first()
+    if user:
+        # Generar código de restablecimiento (6 dígitos)
+        reset_code = str(random.randint(100000, 999999))
+        user.reset_code = reset_code
+        user.reset_expiration = datetime.now() + timedelta(hours=1)  # Código válido por 1 hora
+        db.session.commit()
+        # Enviar correo con el código de restablecimiento
+        send_reset_email(user.email, reset_code)
+    return jsonify({"msg": "Si el correo es válido, recibirás un código de recuperación."}), 200
+
+@api.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    email = data.get('email')
+    reset_code = data.get('reset_code')
+    new_password = data.get('new_password')
+    user = User.query.filter_by(email=email).first()
+    if not user or user.reset_code != reset_code or user.reset_expiration < datetime.now():
+        return jsonify({"msg": "Código de restablecimiento inválido o expirado."}), 400
+    # Actualizar solo el campo de la contraseña
+    user.password = generate_password_hash(new_password)
+    # Eliminar el código después de ser utilizado
+    user.reset_code = None
+    user.reset_expiration = None
+    # Asegúrate de que solo se actualicen los campos necesarios
+    db.session.commit()
+    return jsonify({"msg": "Contraseña restablecida exitosamente."}), 200
+
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():

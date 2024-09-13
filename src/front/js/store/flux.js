@@ -500,7 +500,33 @@ const getState = ({ getStore, getActions, setStore }) => {
 				} catch (error) {
 					console.error("Error al cargar el comentario:", error.response?.data?.message || error.message);
 				}
-			},	
+			},
+			
+			requestPasswordReset: async (email) => {
+				try {
+					const res = await axios.post(`${process.env.BACKEND_URL}/api/password-reset`, {
+						email
+					});
+					console.log(res.data.msg);
+				} catch (error) {
+					console.error("Error al solicitar la recuperación de contraseña:", error.response ? error.response.data : error.message);
+				}
+			},
+			
+			resetPassword: async (email, resetCode, newPassword) => {
+				try {
+					const res = await axios.post(`${process.env.BACKEND_URL}/api/reset-password`, {
+						email,
+						reset_code: resetCode,
+						new_password: newPassword
+					});
+					if (!res.data) throw new Error("Error al restablecer la contraseña");
+					console.log(res.data.msg);
+				} catch (error) {
+					console.error("Error al restablecer la contraseña:", error.response ? error.response.data : error.message);
+				}
+			},
+			
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			getMessage: async () => {
 				try {

@@ -1,11 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(80), unique=False, nullable=False)
+    password = db.Column(db.String(255), unique=False, nullable=False)
     username = db.Column(db.String(20), unique=True, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False, default=True)
     is_admin = db.Column(db.Boolean(), unique=False, nullable=False, default=False)
@@ -15,6 +16,8 @@ class User(db.Model):
     reviews = db.relationship('Review', backref='author', lazy=True)
     posts = db.relationship('Post', backref='author', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un usuario puede crear varios posts
     comments = db.relationship('Comment', backref='author', lazy=True, cascade="all, delete-orphan") # Relación uno a muchos: un usuario puede crear varios comentarios
+    reset_code = db.Column(db.String(128), nullable=True)  # Código único de restablecimiento
+    reset_expiration = db.Column(db.DateTime, nullable=True)  # Fecha de expiración del código
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -23,6 +26,8 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
+            "reset_code": self.reset_code,
+            "reset_expiration": self.reset_expiration,
             "username": self.username,
             "is_active": self.is_active,
             "is_admin": self.is_admin,
@@ -37,6 +42,8 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
+            "reset_code": self.reset_code,
+            "reset_expiration": self.reset_expiration,
             "username": self.username,
             "is_active": self.is_active,
             "is_admin": self.is_admin,
@@ -112,6 +119,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)  # Contenido del post
     image_url = db.Column(db.String(255))  # URL de la imagen (opcional)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ID del usuario que creó el post
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     comments = db.relationship('Comment', backref='post', lazy=True, cascade="all, delete-orphan")  # Relación uno a muchos: un post puede tener muchos comentarios
 
     def __repr__(self):
@@ -124,6 +132,7 @@ class Post(db.Model):
             "content": self.content,
             "image_url": self.image_url,
             "user_id": self.user_id,
+            "created_at": self.created_at.isoformat(),
             "comments": [comment.serialize() for comment in self.comments]
         }
     

@@ -14,6 +14,9 @@ import { GameDetailsPage } from "./pages/GameDetailsPage";
 import { Events } from "./pages/events";
 import { PostPage } from "./pages/postpage";
 
+import { PasswordResetRequest } from "./pages/passwordResetRequest";
+import { PasswordResetForm } from "./pages/passwordResetForm";
+
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
 import '../styles/home.css';
@@ -21,7 +24,7 @@ import '../styles/home.css';
 const Layout = () => {
     const basename = process.env.BASENAME || "";
 
-    if(!process.env.BACKEND_URL || process.env.BACKEND_URL === "") return <BackendURL />;
+    if (!process.env.BACKEND_URL || process.env.BACKEND_URL === "") return <BackendURL />;
 
     return (
         <div className="app-background">
@@ -32,6 +35,8 @@ const Layout = () => {
                         <Route element={<Home />} path="/" />
                         <Route element={<Login />} path="/login" />
                         <Route element={<Signup />} path="/signup" />
+                        <Route element={<PasswordResetRequest />} path="/password-reset-request" />
+                        <Route element={<PasswordResetForm />} path="/reset-password" />
                         <Route element={<Single />} path="/single/:theid" />
                         <Route element={<ProfilePage />} path="/profilepage" />
                         <Route element={<Events />} path="/events" />
